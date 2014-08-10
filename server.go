@@ -5,15 +5,21 @@ import (
 	"fmt"
 	"github.com/go-martini/martini"
 	. "github.com/llun/analytics/services"
-	"log"
 	"net/http"
+	"os"
 )
 
 func main() {
-	network := NetworkWrapper{}
 
-	mixpanel := Mixpanel{network, "6c36dc9fae269f3db57ca151b47aa859"}
-	aggregator := Aggregator{[]Service{mixpanel}}
+	network := NetworkWrapper{}
+	services := []Service{}
+
+	if len(os.Getenv("Mixpanel")) > 0 {
+		mixpanel := Mixpanel{network, os.Getenv("Mixpanel")}
+		services = append(services, mixpanel)
+	}
+
+	aggregator := Aggregator{services}
 
 	m := martini.Classic()
 	m.Post("/send", func(res http.ResponseWriter, req *http.Request) {
@@ -27,7 +33,6 @@ func main() {
 		if err != nil {
 			panic(-1)
 		}
-		log.Println(req.RemoteAddr)
 
 		fmt.Fprintf(res, aggregator.Send(input, req.RemoteAddr))
 	})
