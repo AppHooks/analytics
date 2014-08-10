@@ -1,0 +1,6 @@
+html
+	head
+		title Hello, World
+	body
+		h1 Hello, World
+		h2 Hello, Second World

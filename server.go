@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/go-martini/martini"
 	. "github.com/llun/analytics/services"
+	"github.com/llun/martini-amber"
 	"net/http"
 	"os"
 )
@@ -22,6 +23,10 @@ func main() {
 	aggregator := Aggregator{services}
 
 	m := martini.Classic()
+	m.Use(martini_amber.Renderer())
+	m.Get("/", func(r martini_amber.Render) {
+		r.AmberOK("index", nil)
+	})
 	m.Post("/send", func(res http.ResponseWriter, req *http.Request) {
 		header := res.Header()
 		header.Add("Content-Type", "application/json")
