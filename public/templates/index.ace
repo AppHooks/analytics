@@ -1,0 +1,4 @@
+= content main
+  .row
+    .small-offset-3.small-6.columns
+      h1 Hello, World

@@ -29,11 +29,11 @@ type NetworkWrapper struct {
 
 func (n NetworkWrapper) Request(url string, data string) (int, string, error) {
 	resp, err := http.Get(url + "?" + data)
+	defer resp.Body.Close()
+
 	if err != nil {
 		return 0, "", err
 	}
-
-	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	return resp.StatusCode, string(body), err

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/go-martini/martini"
 	. "github.com/llun/analytics/services"
-	amber "github.com/llun/martini-amber"
+	"github.com/llun/martini-acerender"
 	"net/http"
 	"os"
 )
@@ -23,11 +23,13 @@ func main() {
 	aggregator := Aggregator{services}
 
 	m := martini.Classic()
-	m.Use(amber.Renderer(map[string]string{
-		amber.TemplateDirectory: "public/templates/",
-	}))
-	m.Get("/", func(r amber.Render) {
-		r.AmberOK("index", nil)
+	m.Use(acerender.Renderer(acerender.Options{BaseDir: "public/templates"}))
+	m.Get("/", func(r acerender.Render) {
+		r.AceOk("layout:index", nil)
+	})
+	m.Get("/login", func() {
+	})
+	m.Get("/logout", func() {
 	})
 	m.Post("/send", func(res http.ResponseWriter, req *http.Request) {
 		header := res.Header()
