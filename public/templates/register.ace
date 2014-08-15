@@ -1,7 +1,7 @@
 = content main
   .row
     .small-offset-3.small-6.columns
-      form action="/users/login" method="post"
+      form action="/users/register" method="post"
         .row
           .small-12.columns
             label Username
@@ -12,4 +12,4 @@
               input type="password" placeholder="Password" name="password"
         .row
           .small-12.columns
-            button.small Login
+            button.small Register

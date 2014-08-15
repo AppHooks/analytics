@@ -14,7 +14,7 @@ var _ = Describe("Models/User", func() {
 		Context("#NewUser", func() {
 
 			It("should hash password", func() {
-				user := NewUser(nil, "newuser", "password")
+				user := NewUser(nil, "newuser", "password", "email@address.com")
 				Expect(user.Hash).ToNot(Equal("password"))
 			})
 
@@ -25,7 +25,7 @@ var _ = Describe("Models/User", func() {
 			var user *User
 
 			BeforeEach(func() {
-				user = NewUser(nil, "user", "password")
+				user = NewUser(nil, "user", "password", "email@address.com")
 			})
 
 			It("should authenticate success with correct password", func() {
