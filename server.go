@@ -45,9 +45,10 @@ func main() {
 		r.Post("/register", func(res http.ResponseWriter, req *http.Request) {
 			username := req.PostFormValue("username")
 			password := req.PostFormValue("password")
+			email := req.PostFormValue("email")
 
-			if !models.IsUserExists(&db, username, "") {
-				user := models.NewUser(&db, username, password, "")
+			if !models.IsUserExists(&db, username, email) {
+				user := models.NewUser(&db, username, password, email)
 				user.Save()
 
 				res.Header().Set("Location", "/users/login.html")
