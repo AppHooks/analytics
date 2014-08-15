@@ -35,9 +35,8 @@ func main() {
 
 	m := martini.Classic()
 	m.Use(acerender.Renderer(acerender.Options{BaseDir: "public/templates"}))
-	m.Get("/", func(res http.ResponseWriter) {
-		res.Header().Set("Location", "/users/login.html")
-		res.WriteHeader(302)
+	m.Get("/", func() string {
+		return "Hello, World"
 	})
 	m.Group("/users", func(r martini.Router) {
 		r.Get("/:page.html", func(params martini.Params, r acerender.Render) {
@@ -47,27 +46,32 @@ func main() {
 			username := req.PostFormValue("username")
 			password := req.PostFormValue("password")
 
-			if models.IsUserExists(&db, username, "") == false {
+			if !models.IsUserExists(&db, username, "") {
 				user := models.NewUser(&db, username, password, "")
 				user.Save()
 
-				res.Header().Set("Location", "/")
+				res.Header().Set("Location", "/users/login.html")
 			} else {
 				res.Header().Set("Location", "/users/register.html")
 			}
-			res.WriteHeader(302)
+			res.WriteHeader(http.StatusFound)
 		})
-		r.Post("/login", func(req *http.Request) string {
+		r.Post("/login", func(res http.ResponseWriter, req *http.Request) {
 			user := models.GetUserFromUsername(&db, req.PostFormValue("username"))
-			log.Println(user)
-			return "Hello"
+			if user.Authenticate(req.PostFormValue("password")) {
+				res.Header().Set("Location", "/")
+			} else {
+				res.Header().Set("Location", "/users/login.html")
+			}
+			res.WriteHeader(http.StatusFound)
+
 		})
 	})
 
 	m.Post("/analytics/send", func(res http.ResponseWriter, req *http.Request) {
 		header := res.Header()
 		header.Add("Content-Type", "application/json")
-		res.WriteHeader(200)
+		res.WriteHeader(http.StatusOK)
 
 		decoder := json.NewDecoder(req.Body)
 		var input map[string]interface{}

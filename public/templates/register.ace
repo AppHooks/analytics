@@ -12,4 +12,8 @@
               input type="password" placeholder="Password" name="password"
         .row
           .small-12.columns
+            label Email
+              input type="text" placeholder="Email" name="email"
+        .row
+          .small-12.columns
             button.small Register

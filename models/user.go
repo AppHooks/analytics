@@ -26,9 +26,10 @@ func (u *User) Authenticate(password string) (success bool) {
 	return u.Hash == hex.EncodeToString(sum[:])
 }
 
-func GetUserFromUsername(db *gorm.DB, username string) *User {
-	var user *User
+func GetUserFromUsername(db *gorm.DB, username string) User {
+	var user User
 	db.Where("username = ?", username).First(&user)
+	user.BaseModel = NewBaseModel(db, &user)
 	return user
 }
 
