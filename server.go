@@ -35,34 +35,35 @@ func main() {
 
 	m := martini.Classic()
 	m.Use(acerender.Renderer(acerender.Options{BaseDir: "public/templates"}))
-	m.Get("/", func(r acerender.Render) {
-		r.AceOk("layout:index", nil)
-	})
-	m.Get("/users/register.html", func(r acerender.Render) {
-		r.AceOk("layout:register", nil)
-	})
-
-	m.Post("/users/register", func(res http.ResponseWriter, req *http.Request) {
-		username := req.PostFormValue("username")
-		password := req.PostFormValue("password")
-
-		if models.IsUserExists(&db, username, "") == false {
-			user := models.NewUser(&db, username, password, "")
-			user.Save()
-
-			res.Header().Set("Location", "/")
-		} else {
-			res.Header().Set("Location", "/users/register.html")
-		}
+	m.Get("/", func(res http.ResponseWriter) {
+		res.Header().Set("Location", "/users/login.html")
 		res.WriteHeader(302)
 	})
-	m.Post("/users/login", func(req *http.Request) string {
-		user := models.GetUserFromUsername(&db, req.PostFormValue("username"))
-		log.Println(user)
-		return "Hello"
+	m.Group("/users", func(r martini.Router) {
+		r.Get("/:page.html", func(params martini.Params, r acerender.Render) {
+			r.AceOk("layout:"+params["page"], nil)
+		})
+		r.Post("/register", func(res http.ResponseWriter, req *http.Request) {
+			username := req.PostFormValue("username")
+			password := req.PostFormValue("password")
+
+			if models.IsUserExists(&db, username, "") == false {
+				user := models.NewUser(&db, username, password, "")
+				user.Save()
+
+				res.Header().Set("Location", "/")
+			} else {
+				res.Header().Set("Location", "/users/register.html")
+			}
+			res.WriteHeader(302)
+		})
+		r.Post("/login", func(req *http.Request) string {
+			user := models.GetUserFromUsername(&db, req.PostFormValue("username"))
+			log.Println(user)
+			return "Hello"
+		})
 	})
-	m.Get("/users/logout", func() {
-	})
+
 	m.Post("/analytics/send", func(res http.ResponseWriter, req *http.Request) {
 		header := res.Header()
 		header.Add("Content-Type", "application/json")
