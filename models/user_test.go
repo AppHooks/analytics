@@ -38,6 +38,18 @@ var _ = Describe("Models/User", func() {
 
 		})
 
+		Context("#ToMap", func() {
+
+			It("should export public properties", func() {
+				user := NewUser(nil, "user", "password", "email@address.com")
+				Expect(user.ToMap()).To(Equal(map[string]interface{}{
+					"username": "user",
+					"email":    "email@address.com",
+				}))
+			})
+
+		})
+
 	})
 
 })
