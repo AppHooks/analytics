@@ -18,6 +18,8 @@ type Output struct {
 type Service interface {
 	Send(in Input) Output
 	GetName() string
+	GetConfiguration() map[string]interface{}
+	LoadConfiguration(configuration map[string]interface{})
 }
 
 type Network interface {

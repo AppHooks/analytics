@@ -105,4 +105,32 @@ var _ = Describe("Mixpanel", func() {
 
 	})
 
+	Context("#GetConfiguration", func() {
+
+		It("should return configuration as json with token", func() {
+
+			service := Mixpanel{nil, "token"}
+			config := service.GetConfiguration()
+			Expect(config).To(Equal(map[string]interface{}{
+				"token": "token",
+			}))
+
+		})
+
+	})
+
+	Context("#LoadConfiguration", func() {
+
+		It("should apply new configuration to service", func() {
+
+			service := Mixpane{nil, "token"}
+			service.LoadConfiguration(map[string]interface{}{
+				"token": "newtoken",
+			})
+			Expect(service.Token).To(Equal("newtoken"))
+
+		})
+
+	})
+
 })
