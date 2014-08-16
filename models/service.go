@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"github.com/jinzhu/gorm"
 )
 
@@ -18,8 +19,10 @@ func (s *Service) ToMap() map[string]interface{} {
 }
 
 func NewService(db *gorm.DB, name string, configuration map[string]interface{}) *Service {
+	marshalConfiguration, _ := json.Marshal(configuration)
 	service := Service{
-		Name: name,
+		Name:          name,
+		Configuration: string(marshalConfiguration),
 	}
 	service.BaseModel = NewBaseModel(db, &service)
 	return &service
