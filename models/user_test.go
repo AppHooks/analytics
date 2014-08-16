@@ -12,7 +12,8 @@ var _ = Describe("Models/User", func() {
 
 		It("should hash password", func() {
 			user := NewUser(nil, "newuser", "password", "email@address.com")
-			Expect(user.Hash).ToNot(Equal("password"))
+			Expect(user.Password).ToNot(Equal("password"))
+			Expect(user.Key).NotTo(BeEmpty())
 		})
 
 	})

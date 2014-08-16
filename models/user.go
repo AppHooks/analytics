@@ -13,6 +13,8 @@ type User struct {
 	Username string
 	Hash     string
 	Email    string
+	Key      string
+	Services []Service
 }
 
 func (u *User) ToMap() map[string]interface{} {
