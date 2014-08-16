@@ -18,6 +18,12 @@ func (s *Service) ToMap() map[string]interface{} {
 	}
 }
 
+func (s *Service) GetConfiguration() map[string]interface{} {
+	var result map[string]interface{}
+	json.Unmarshal([]byte(s.Configuration), &result)
+	return result
+}
+
 func NewService(db *gorm.DB, name string, configuration map[string]interface{}) *Service {
 	marshalConfiguration, _ := json.Marshal(configuration)
 	service := Service{
