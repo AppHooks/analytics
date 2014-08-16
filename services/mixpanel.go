@@ -29,7 +29,7 @@ func (m *Mixpanel) GetConfiguration() map[string]interface{} {
 }
 
 func (m *Mixpanel) LoadConfiguration(configuration map[string]interface{}) {
-
+	m.Token = configuration["token"].(string)
 }
 
 func (m Mixpanel) GetName() string {
