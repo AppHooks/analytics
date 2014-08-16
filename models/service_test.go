@@ -42,6 +42,25 @@ var _ = Describe("Models/Service", func() {
 
 		})
 
+		Context("#GetConfiguration", func() {
+			It("should unmarshal configuration to map object", func() {
+
+				service := Service{
+					Name:          "MockService",
+					Configuration: `{"key1":"value1","key2":"value2","key3":{"key4":"value4"}}`,
+				}
+				configuration := service.GetConfiguration()
+				Expect(configuration).To(Equal(map[string]interface{}{
+					"key1": "value1",
+					"key2": "value2",
+					"key3": map[string]interface{}{
+						"key4": "value4",
+					},
+				}))
+
+			})
+		})
+
 	})
 
 })
