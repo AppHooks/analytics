@@ -2,23 +2,22 @@ package models_test
 
 import (
 	. "github.com/llun/analytics/models"
-	_ "github.com/mattn/go-sqlite3"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("Models/User", func() {
 
-	Describe("User", func() {
+	Context("#NewUser", func() {
 
-		Context("#NewUser", func() {
-
-			It("should hash password", func() {
-				user := NewUser(nil, "newuser", "password", "email@address.com")
-				Expect(user.Hash).ToNot(Equal("password"))
-			})
-
+		It("should hash password", func() {
+			user := NewUser(nil, "newuser", "password", "email@address.com")
+			Expect(user.Hash).ToNot(Equal("password"))
 		})
+
+	})
+
+	Describe("User", func() {
 
 		Context("#Authenticate", func() {
 

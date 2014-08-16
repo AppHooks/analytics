@@ -18,6 +18,7 @@ type User struct {
 func (u *User) ToMap() map[string]interface{} {
 	return map[string]interface{}{
 		"username": u.Username,
+		"email":    u.Email,
 	}
 }
 
