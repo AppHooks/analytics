@@ -123,7 +123,7 @@ var _ = Describe("Mixpanel", func() {
 
 		It("should apply new configuration to service", func() {
 
-			service := Mixpane{nil, "token"}
+			service := Mixpanel{nil, "token"}
 			service.LoadConfiguration(map[string]interface{}{
 				"token": "newtoken",
 			})

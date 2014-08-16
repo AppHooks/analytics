@@ -22,6 +22,16 @@ func (m *Mixpanel) Parse(in Input) ([]byte, error) {
 	return bytes, err
 }
 
+func (m *Mixpanel) GetConfiguration() map[string]interface{} {
+	return map[string]interface{}{
+		"token": m.Token,
+	}
+}
+
+func (m *Mixpanel) LoadConfiguration(configuration map[string]interface{}) {
+
+}
+
 func (m Mixpanel) GetName() string {
 	return "MixPanel"
 }

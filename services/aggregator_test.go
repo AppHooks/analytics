@@ -8,20 +8,6 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-type MockService struct {
-	Name string
-	Data Input
-}
-
-func (m *MockService) Send(in Input) Output {
-	m.Data = in
-	return Output{true}
-}
-
-func (m *MockService) GetName() string {
-	return m.Name
-}
-
 var _ = Describe("Aggregator", func() {
 
 	Context("#Send", func() {
