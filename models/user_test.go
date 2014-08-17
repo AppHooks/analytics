@@ -11,7 +11,7 @@ var _ = Describe("Models/User", func() {
 	Context("#NewUser", func() {
 
 		It("should hash password and generate random key", func() {
-			user := NewUser(nil, "newuser", "password", "email@address.com")
+			user := NewUser(nil, "email@address.com", "password")
 			Expect(user.Password).ToNot(Equal("password"))
 			Expect(user.Key).NotTo(BeEmpty())
 		})
@@ -25,7 +25,7 @@ var _ = Describe("Models/User", func() {
 			var user *User
 
 			BeforeEach(func() {
-				user = NewUser(nil, "user", "password", "email@address.com")
+				user = NewUser(nil, "email@address.com", "password")
 			})
 
 			It("should authenticate success with correct password", func() {
@@ -41,10 +41,9 @@ var _ = Describe("Models/User", func() {
 		Context("#ToMap", func() {
 
 			It("should export public properties", func() {
-				user := NewUser(nil, "user", "password", "email@address.com")
+				user := NewUser(nil, "email@address.com", "password")
 				Expect(user.ToMap()).To(Equal(map[string]interface{}{
-					"username": "user",
-					"email":    "email@address.com",
+					"email": "email@address.com",
 				}))
 			})
 
