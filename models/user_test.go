@@ -10,7 +10,7 @@ var _ = Describe("Models/User", func() {
 
 	Context("#NewUser", func() {
 
-		It("should hash password", func() {
+		It("should hash password and generate random key", func() {
 			user := NewUser(nil, "newuser", "password", "email@address.com")
 			Expect(user.Password).ToNot(Equal("password"))
 			Expect(user.Key).NotTo(BeEmpty())
