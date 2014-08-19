@@ -31,8 +31,14 @@ func (u *User) Authenticate(password string) (success bool) {
 
 func GetUserFromEmail(db *gorm.DB, email string) User {
 	var user User
-	db.Where("email = ?", email).First(&user)
+	db.Where(&User{Email: email}).First(&user)
 	user.BaseModel = NewBaseModel(db, &user)
+	return user
+}
+
+func GetUserFromId(db *gorm.DB, id int64) User {
+	var user User
+	db.First(&user, id)
 	return user
 }
 

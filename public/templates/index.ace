@@ -1,0 +1,12 @@
+= content main
+  .row
+    .small-offset-3.small-6.columns
+      {{if .Get "user" }}
+      | Hello, {{(.Get "_user").Email}}
+      {{else}}
+      a href="/users/login.html"
+        | Login 
+      | Or 
+      a href="/users/register.html"
+        | Register
+      {{end}}
