@@ -10,6 +10,7 @@ import (
 	"github.com/llun/martini-acerender"
 	. "github.com/martini-contrib/sessions"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/yosssi/ace"
 	"log"
 	"net/http"
 	"os"
@@ -40,7 +41,7 @@ func main() {
 	aggregator := Aggregator{services}
 
 	m := martini.Classic()
-	m.Use(acerender.Renderer(acerender.Options{BaseDir: "public/templates"}))
+	m.Use(acerender.Renderer(&ace.Options{BaseDir: "public/templates"}))
 
 	store := NewCookieStore([]byte("secret"))
 	store.Options(Options{
