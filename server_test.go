@@ -11,6 +11,7 @@ import (
 	"github.com/go-martini/martini"
 	"github.com/llun/analytics"
 
+	. "github.com/martini-contrib/sessions"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -22,6 +23,39 @@ var _ = Describe("Server", func() {
 	BeforeEach(func() {
 		m = martini.Classic()
 		main.Analytics(m)
+	})
+
+	Describe("Index", func() {
+
+		It("should redirect to login when user doesn't login yet", func() {
+
+			res := httptest.NewRecorder()
+			req, _ := http.NewRequest("GET", "/", nil)
+
+			m.ServeHTTP(res, req)
+
+			Expect(res.Code).To(Equal(http.StatusFound))
+			Expect(res.Header().Get("Location")).To(Equal("/users/login.html"))
+
+		})
+
+		It("should redirect to list services when user is already login", func() {
+
+			m.Use(func(c martini.Context, session Session) {
+				// Emulate user is already logged in.
+				session.Set(main.SESSION_USER_KEY, "user")
+				c.Next()
+			})
+			res := httptest.NewRecorder()
+			req, _ := http.NewRequest("GET", "/", nil)
+
+			m.ServeHTTP(res, req)
+
+			Expect(res.Code).To(Equal(http.StatusFound))
+			Expect(res.Header().Get("Location")).To(Equal("/services/list.html"))
+
+		})
+
 	})
 
 	Describe("User login", func() {

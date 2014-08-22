@@ -68,25 +68,26 @@ func Analytics(m *martini.ClassicMartini) {
 		c.Next()
 	})
 
-	m.Get("/", func(r acerender.Render, session Session) {
-		r.AceOk("layout:index", session)
+	alreadyLoggedIn := func(c martini.Context, res http.ResponseWriter, session Session) {
+		if session.Get(SESSION_USER_KEY) != nil {
+			res.Header().Set("Location", "/services/list.html")
+			res.WriteHeader(http.StatusFound)
+			return
+		}
+
+		c.Next()
+	}
+
+	m.Get("/", alreadyLoggedIn, func(res http.ResponseWriter) {
+		res.Header().Set("Location", "/users/login.html")
+		res.WriteHeader(http.StatusFound)
 	})
 	m.Group("/users", func(r martini.Router) {
-
-		alreadyLoggedin := func(c martini.Context, res http.ResponseWriter, session Session) {
-			if session.Get(SESSION_USER_KEY) != nil {
-				res.Header().Set("Location", "/services/list.html")
-				res.WriteHeader(http.StatusFound)
-				return
-			}
-
-			c.Next()
-		}
 
 		r.Get("/:page.html", func(params martini.Params, r acerender.Render) {
 			r.AceOk("layout:"+params["page"], nil)
 		})
-		r.Post("/register", alreadyLoggedin, func(res http.ResponseWriter, req *http.Request, session Session) {
+		r.Post("/register", alreadyLoggedIn, func(res http.ResponseWriter, req *http.Request, session Session) {
 			email := req.PostFormValue("email")
 			password := req.PostFormValue("password")
 
@@ -100,7 +101,7 @@ func Analytics(m *martini.ClassicMartini) {
 			}
 			res.WriteHeader(http.StatusFound)
 		})
-		r.Post("/login", alreadyLoggedin, func(res http.ResponseWriter, req *http.Request, session Session) {
+		r.Post("/login", alreadyLoggedIn, func(res http.ResponseWriter, req *http.Request, session Session) {
 			user := models.GetUserFromEmail(&db, req.PostFormValue("email"))
 			if user.Authenticate(req.PostFormValue("password")) {
 				session.Set(SESSION_USER_KEY, user.Id)
