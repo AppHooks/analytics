@@ -1,6 +1,8 @@
 package models_test
 
 import (
+	"errors"
+
 	. "github.com/llun/analytics/models"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -8,12 +10,29 @@ import (
 
 var _ = Describe("Models/User", func() {
 
-	Context("#NewUser", func() {
+	Describe("#NewUser", func() {
 
 		It("should hash password and generate random key", func() {
-			user := NewUser(nil, "email@address.com", "password")
+			user, _ := NewUser(nil, "email@address.com", "password")
 			Expect(user.Password).ToNot(Equal("password"))
 			Expect(user.Key).NotTo(BeEmpty())
+		})
+
+		Context("Validate Email", func() {
+
+			It("should return error when email is not email", func() {
+				user, err := NewUser(nil, "email", "password")
+				Expect(user).To(BeNil())
+				Expect(err).ToNot(BeNil())
+				Expect(err).To(Equal(errors.New("Invalid Email")))
+			})
+
+			It("should return user when email is correct", func() {
+				user, err := NewUser(nil, "email@admin.com", "password")
+				Expect(user).ToNot(BeNil())
+				Expect(err).To(BeNil())
+			})
+
 		})
 
 	})
@@ -25,7 +44,7 @@ var _ = Describe("Models/User", func() {
 			var user *User
 
 			BeforeEach(func() {
-				user = NewUser(nil, "email@address.com", "password")
+				user, _ = NewUser(nil, "email@address.com", "password")
 			})
 
 			It("should authenticate success with correct password", func() {
@@ -41,7 +60,7 @@ var _ = Describe("Models/User", func() {
 		Context("#ToMap", func() {
 
 			It("should export public properties", func() {
-				user := NewUser(nil, "email@address.com", "password")
+				user, _ := NewUser(nil, "email@address.com", "password")
 				Expect(user.ToMap()).To(Equal(map[string]interface{}{
 					"email": "email@address.com",
 				}))

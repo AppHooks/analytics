@@ -4,9 +4,12 @@ import (
 	"bytes"
 	"crypto/sha1"
 	"encoding/hex"
+	"errors"
+	"io"
+	"regexp"
+
 	"github.com/dustin/randbo"
 	"github.com/jinzhu/gorm"
-	"io"
 )
 
 type User struct {
@@ -48,16 +51,30 @@ func IsUserExists(db *gorm.DB, email string) bool {
 	return count > 0
 }
 
-func NewUser(db *gorm.DB, email string, password string) *User {
+func isNotEmail(email string) bool {
+	matched, _ := regexp.MatchString("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", email)
+	return !matched
+}
+
+func NewUser(db *gorm.DB, email string, password string) (*User, error) {
 	var buff bytes.Buffer
+
+	if isNotEmail(email) {
+		return nil, errors.New("Invalid Email")
+	}
+
+	// Generate Key Hash
 	io.CopyN(&buff, randbo.New(), 16)
 
+	// Create password hash from sha1 algorithm
 	sum := sha1.Sum([]byte(password))
 	user := User{
 		Email:    email,
 		Password: hex.EncodeToString(sum[:]),
 		Key:      hex.EncodeToString(buff.Bytes()),
 	}
+
+	// Extension - Golang doesn't inheritance.
 	user.BaseModel = NewBaseModel(db, &user)
-	return &user
+	return &user, nil
 }
