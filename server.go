@@ -3,17 +3,20 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/go-martini/martini"
-	"github.com/jinzhu/gorm"
-	"github.com/llun/analytics/models"
-	. "github.com/llun/analytics/services"
-	"github.com/llun/martini-acerender"
-	. "github.com/martini-contrib/sessions"
-	_ "github.com/mattn/go-sqlite3"
-	"github.com/yosssi/ace"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/go-martini/martini"
+	"github.com/jinzhu/gorm"
+	"github.com/llun/analytics/models"
+	"github.com/llun/martini-acerender"
+	"github.com/yosssi/ace"
+
+	. "github.com/llun/analytics/services"
+	. "github.com/martini-contrib/sessions"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 const (
