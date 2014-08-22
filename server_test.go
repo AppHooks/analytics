@@ -94,6 +94,24 @@ var _ = Describe("Server", func() {
 			Expect(res.Header().Get("Location")).To(Equal("/services/list.html"))
 		})
 
+		It("should redirect back to register page when validate email fail", func() {
+			data := url.Values{}
+			data.Set("email", "user")
+			data.Set("password", "password")
+			data.Set("confirm", "password")
+
+			res := httptest.NewRecorder()
+			req, _ := http.NewRequest("POST", "/users/register", bytes.NewBufferString(data.Encode()))
+			req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+			req.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
+
+			m.ServeHTTP(res, req)
+
+			Expect(res.Code).To(Equal(http.StatusFound))
+			Expect(res.Header().Get("Location")).To(Equal("/users/register.html"))
+
+		})
+
 	})
 
 })

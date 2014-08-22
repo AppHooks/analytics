@@ -76,10 +76,13 @@ func Analytics(db gorm.DB, m *martini.ClassicMartini) {
 			password := req.PostFormValue("password")
 
 			if !models.IsUserExists(&db, email) {
-				user := models.NewUser(&db, email, password)
-				user.Save()
-
-				res.Header().Set("Location", "/services/list.html")
+				user, err := models.NewUser(&db, email, password)
+				if err == nil {
+					user.Save()
+					res.Header().Set("Location", "/services/list.html")
+				} else {
+					res.Header().Set("Location", "/users/register.html")
+				}
 			} else {
 				res.Header().Set("Location", "/users/register.html")
 			}
