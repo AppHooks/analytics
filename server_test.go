@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"strconv"
 
 	"github.com/go-martini/martini"
@@ -23,7 +24,13 @@ var _ = Describe("Server", func() {
 		main.Analytics(m)
 	})
 
+	Describe("User login", func() {
+		// Load fixtures to databases.
+	})
+
 	Describe("User register", func() {
+
+		os.Remove("/tmp/analytics.db")
 
 		It("should redirect to index page when success", func() {
 			data := url.Values{}

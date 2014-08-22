@@ -25,7 +25,17 @@ const (
 )
 
 func Analytics(m *martini.ClassicMartini) {
-	db, err := gorm.Open("sqlite3", "/tmp/analytics.db")
+
+	var (
+		db  gorm.DB
+		err error
+	)
+	if martini.Env == martini.Dev {
+		db, err = gorm.Open("sqlite3", "/tmp/analytics.db")
+	} else {
+		// Use postgresql
+	}
+
 	if err != nil {
 		log.Println(err)
 		panic(-1)
@@ -65,7 +75,7 @@ func Analytics(m *martini.ClassicMartini) {
 
 		alreadyLoggedin := func(c martini.Context, res http.ResponseWriter, session Session) {
 			if session.Get(SESSION_USER_KEY) != nil {
-				res.Header().Set("Location", "/")
+				res.Header().Set("Location", "/services/list.html")
 				res.WriteHeader(http.StatusFound)
 				return
 			}
@@ -84,7 +94,7 @@ func Analytics(m *martini.ClassicMartini) {
 				user := models.NewUser(&db, email, password)
 				user.Save()
 
-				res.Header().Set("Location", "/users/login.html")
+				res.Header().Set("Location", "/services/list.html")
 			} else {
 				res.Header().Set("Location", "/users/register.html")
 			}
