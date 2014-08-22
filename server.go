@@ -24,23 +24,7 @@ const (
 	SESSION_INTERNAL_USER_KEY = "_user"
 )
 
-func Analytics(m *martini.ClassicMartini) {
-
-	var (
-		db  gorm.DB
-		err error
-	)
-	if martini.Env == martini.Dev {
-		db, err = gorm.Open("sqlite3", "/tmp/analytics.db")
-	} else {
-		// Use postgresql
-	}
-
-	if err != nil {
-		log.Println(err)
-		panic(-1)
-	}
-	db.CreateTable(models.User{})
+func Analytics(db gorm.DB, m *martini.ClassicMartini) {
 
 	network := NetworkWrapper{}
 	services := []Service{}
@@ -136,7 +120,24 @@ func Analytics(m *martini.ClassicMartini) {
 }
 
 func main() {
+	var (
+		db  gorm.DB
+		err error
+	)
+	if martini.Env == martini.Dev {
+		db, err = gorm.Open("sqlite3", "/tmp/analytics.db")
+	} else {
+		// Use postgresql
+	}
+
+	if err != nil {
+		log.Println(err)
+		panic(-1)
+	}
+
+	db.CreateTable(models.User{})
+
 	m := martini.Classic()
-	Analytics(m)
+	Analytics(db, m)
 	m.Run()
 }

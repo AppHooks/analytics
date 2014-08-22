@@ -9,12 +9,23 @@ import (
 	"strconv"
 
 	"github.com/go-martini/martini"
+	"github.com/jinzhu/gorm"
 	"github.com/llun/analytics"
+	"github.com/llun/analytics/models"
 
 	. "github.com/martini-contrib/sessions"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
+
+func GenerateFixtures() (db gorm.DB) {
+	os.Remove("/tmp/analytics.db")
+
+	db, _ = gorm.Open("sqlite3", "/tmp/analytics.db")
+	models.NewUser(&db, "admin@email.com", "password")
+
+	return
+}
 
 var _ = Describe("Server", func() {
 
@@ -22,7 +33,9 @@ var _ = Describe("Server", func() {
 
 	BeforeEach(func() {
 		m = martini.Classic()
-		main.Analytics(m)
+
+		db := GenerateFixtures()
+		main.Analytics(db, m)
 	})
 
 	Describe("Index", func() {
@@ -63,8 +76,6 @@ var _ = Describe("Server", func() {
 	})
 
 	Describe("User register", func() {
-
-		os.Remove("/tmp/analytics.db")
 
 		It("should redirect to index page when success", func() {
 			data := url.Values{}
