@@ -21,8 +21,7 @@ const (
 	SESSION_INTERNAL_USER_KEY = "_user"
 )
 
-func main() {
-
+func Analytics(m *martini.ClassicMartini) {
 	db, err := gorm.Open("sqlite3", "/tmp/analytics.db")
 	if err != nil {
 		log.Println(err)
@@ -39,8 +38,6 @@ func main() {
 	}
 
 	aggregator := Aggregator{services}
-
-	m := martini.Classic()
 	m.Use(acerender.Renderer(&ace.Options{BaseDir: "public/templates"}))
 
 	store := NewCookieStore([]byte("secret"))
@@ -122,5 +119,10 @@ func main() {
 
 		fmt.Fprintf(res, aggregator.Send(input, req.RemoteAddr))
 	})
+}
+
+func main() {
+	m := martini.Classic()
+	Analytics(m)
 	m.Run()
 }

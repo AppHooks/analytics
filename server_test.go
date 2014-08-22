@@ -9,4 +9,12 @@ import (
 
 var _ = Describe("Server", func() {
 
+	Descibe("User login", func() {
+
+		It("should redirect to index page when success", func() {
+
+		})
+
+	})
+
 })
