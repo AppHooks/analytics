@@ -18,21 +18,10 @@ var _ = Describe("Models/User", func() {
 			Expect(user.Key).NotTo(BeEmpty())
 		})
 
-		Context("Validate Email", func() {
-
-			It("should return error when email is not email", func() {
-				user, err := NewUser(nil, "email", "password")
-				Expect(user).To(BeNil())
-				Expect(err).ToNot(BeNil())
-				Expect(err).To(Equal(errors.New("Invalid Email")))
-			})
-
-			It("should return user when email is correct", func() {
-				user, err := NewUser(nil, "email@admin.com", "password")
-				Expect(user).ToNot(BeNil())
-				Expect(err).To(BeNil())
-			})
-
+		It("should return error when email is invalid", func() {
+			user, err := NewUser(nil, "email", "password")
+			Expect(user).To(BeNil())
+			Expect(err).To(Equal(errors.New("Invalid Email")))
 		})
 
 	})

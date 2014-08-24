@@ -2,6 +2,8 @@ package main_test
 
 import (
 	"bytes"
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -23,6 +25,7 @@ func GenerateFixtures() (db gorm.DB) {
 
 	db, _ = gorm.Open("sqlite3", "/tmp/analytics.db")
 	models.NewUser(&db, "admin@email.com", "password")
+	models.NewService(&db, "")
 
 	return
 }
@@ -72,7 +75,21 @@ var _ = Describe("Server", func() {
 	})
 
 	Describe("User login", func() {
-		// Load fixtures to databases.
+		It("should redirect to index page when success", func() {
+			data := url.Values{}
+			data.Set("email", "admin@email.com")
+			data.Set("password", "password")
+
+			res := httptest.NewRecorder()
+			req, _ := http.NewRequest("POST", "/users/login", bytes.NewBufferString(data.Encode()))
+			req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+			req.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
+
+			m.ServeHTTP(res, req)
+
+			Expect(res.Code).To(Equal(http.StatusFound))
+			Expect(res.Header().Get("Location")).To(Equal("/services/list.html"))
+		})
 	})
 
 	Describe("User register", func() {
@@ -110,6 +127,46 @@ var _ = Describe("Server", func() {
 			Expect(res.Code).To(Equal(http.StatusFound))
 			Expect(res.Header().Get("Location")).To(Equal("/users/register.html"))
 
+		})
+
+	})
+
+	Context("Services", func() {
+
+		It("should add service to user object", func() {
+		})
+
+		It("should send data to user services", func() {
+			prepare := map[string]interface{}{
+				"event": "name",
+				"data": map[string]interface{}{
+					"key1": "value1",
+					"key2": "value2",
+				},
+			}
+
+			b, _ := json.Marshal(prepare)
+			data := string(b)
+
+			res := httptest.NewRecorder()
+			req, _ := http.NewRequest("POST", "/services/send/key", bytes.NewBufferString(data))
+			req.Header.Add("Content-Type", "application/json")
+			req.Header.Add("Content-Length", strconv.Itoa(len(data)))
+
+			m.ServeHTTP(res, req)
+
+			Expect(res.Code).To(Equal(http.StatusFound))
+
+			body, _ := ioutil.ReadAll(res.Body)
+			output := map[string]interface{}{
+				"success": true,
+				"services": map[string]interface{}{
+					"service1": true,
+					"service2": true,
+				},
+			}
+			outputBytes, _ := json.Marshal(output)
+			Expect(string(body)).To(Equal(string(outputBytes)))
 		})
 
 	})

@@ -6,10 +6,10 @@ import (
 	"encoding/hex"
 	"errors"
 	"io"
-	"regexp"
 
 	"github.com/dustin/randbo"
 	"github.com/jinzhu/gorm"
+	"github.com/llun/analytics/validators"
 )
 
 type User struct {
@@ -51,15 +51,10 @@ func IsUserExists(db *gorm.DB, email string) bool {
 	return count > 0
 }
 
-func isNotEmail(email string) bool {
-	matched, _ := regexp.MatchString("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", email)
-	return !matched
-}
-
 func NewUser(db *gorm.DB, email string, password string) (*User, error) {
 	var buff bytes.Buffer
 
-	if isNotEmail(email) {
+	if !validators.IsEmail(email) {
 		return nil, errors.New("Invalid Email")
 	}
 
