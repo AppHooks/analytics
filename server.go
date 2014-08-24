@@ -24,7 +24,7 @@ const (
 	SESSION_INTERNAL_USER_KEY = "_user"
 )
 
-func Analytics(db gorm.DB, m *martini.ClassicMartini) {
+func Analytics(db *gorm.DB, m *martini.ClassicMartini) {
 
 	network := NetworkWrapper{}
 	services := []Service{}
@@ -45,7 +45,7 @@ func Analytics(db gorm.DB, m *martini.ClassicMartini) {
 	m.Use(Sessions("analytics", store))
 	m.Use(func(c martini.Context, session Session) {
 		if session.Get(SESSION_USER_KEY) != nil {
-			user := models.GetUserFromId(&db, session.Get(SESSION_USER_KEY).(int64))
+			user := models.GetUserFromId(db, session.Get(SESSION_USER_KEY).(int64))
 			session.Set(SESSION_INTERNAL_USER_KEY, user)
 		}
 
@@ -53,6 +53,7 @@ func Analytics(db gorm.DB, m *martini.ClassicMartini) {
 	})
 
 	alreadyLoggedIn := func(c martini.Context, res http.ResponseWriter, session Session) {
+		log.Printf("User Key: %+v", session.Get(SESSION_USER_KEY))
 		if session.Get(SESSION_USER_KEY) != nil {
 			res.Header().Set("Location", "/services/list.html")
 			res.WriteHeader(http.StatusFound)
@@ -75,24 +76,20 @@ func Analytics(db gorm.DB, m *martini.ClassicMartini) {
 			email := req.PostFormValue("email")
 			password := req.PostFormValue("password")
 
-			if !models.IsUserExists(&db, email) {
-				user, err := models.NewUser(&db, email, password)
-				if err == nil {
-					user.Save()
-					res.Header().Set("Location", "/services/list.html")
-				} else {
-					res.Header().Set("Location", "/users/register.html")
-				}
+			if user, err := models.NewUser(db, email, password); !models.IsUserExists(db, email) && err == nil {
+				user.Save()
+				res.Header().Set("Location", "/services/list.html")
 			} else {
 				res.Header().Set("Location", "/users/register.html")
 			}
 			res.WriteHeader(http.StatusFound)
 		})
 		r.Post("/login", alreadyLoggedIn, func(res http.ResponseWriter, req *http.Request, session Session) {
-			user := models.GetUserFromEmail(&db, req.PostFormValue("email"))
-			if user.Authenticate(req.PostFormValue("password")) {
+			user := models.GetUserFromEmail(db, req.FormValue("email"))
+			if user != nil && user.Authenticate(req.FormValue("password")) {
+				log.Printf("User %v is logged in\n", user.Email)
 				session.Set(SESSION_USER_KEY, user.Id)
-				res.Header().Set("Location", "/")
+				res.Header().Set("Location", "/services/list.html")
 			} else {
 				res.Header().Set("Location", "/users/login.html")
 			}
@@ -141,6 +138,6 @@ func main() {
 	db.CreateTable(models.User{})
 
 	m := martini.Classic()
-	Analytics(db, m)
+	Analytics(&db, m)
 	m.Run()
 }

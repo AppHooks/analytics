@@ -27,16 +27,22 @@ func (u *User) ToMap() map[string]interface{} {
 	}
 }
 
-func (u *User) Authenticate(password string) (success bool) {
+func (u *User) Authenticate(password string) bool {
 	sum := sha1.Sum([]byte(password))
 	return u.Password == hex.EncodeToString(sum[:])
 }
 
-func GetUserFromEmail(db *gorm.DB, email string) User {
-	var user User
-	db.Where(&User{Email: email}).First(&user)
-	user.BaseModel = NewBaseModel(db, &user)
-	return user
+func GetUserFromEmail(db *gorm.DB, email string) *User {
+	var (
+		user  User
+		total int
+	)
+	db.Where("email = ?", email).First(&user).Count(&total)
+
+	if total == 0 {
+		return nil
+	}
+	return &user
 }
 
 func GetUserFromId(db *gorm.DB, id int64) User {
