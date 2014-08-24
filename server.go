@@ -73,8 +73,8 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini) {
 			r.AceOk("layout:"+params["page"], nil)
 		})
 		r.Post("/register", alreadyLoggedIn, func(res http.ResponseWriter, req *http.Request, session Session) {
-			email := req.PostFormValue("email")
-			password := req.PostFormValue("password")
+			email := req.FormValue("email")
+			password := req.FormValue("password")
 
 			if user, err := models.NewUser(db, email, password); !models.IsUserExists(db, email) && err == nil {
 				user.Save()

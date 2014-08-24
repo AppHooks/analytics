@@ -142,7 +142,7 @@ var _ = Describe("Server", func() {
 
 		It("should redirect back to register page when user is already exists", func() {
 			res := httptest.NewRecorder()
-			req := CreatePostFormRequest(REGISTER_URL, createRegisterData("email@admin.com", "password", "password"))
+			req := CreatePostFormRequest(REGISTER_URL, createRegisterData("admin@email.com", "password", "password"))
 
 			m.ServeHTTP(res, req)
 
