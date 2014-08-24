@@ -48,14 +48,6 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini) {
 		MaxAge: 86400000,
 	})
 	m.Use(Sessions("analytics", store))
-	m.Use(func(c martini.Context, session Session) {
-		if session.Get(SESSION_USER_KEY) != nil {
-			user := models.GetUserFromId(db, session.Get(SESSION_USER_KEY).(int64))
-			session.Set(SESSION_INTERNAL_USER_KEY, user)
-		}
-
-		c.Next()
-	})
 
 	alreadyLoggedIn := func(c martini.Context, res http.ResponseWriter, session Session) {
 		log.Printf("User Key: %+v", session.Get(SESSION_USER_KEY))
@@ -74,8 +66,8 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini) {
 	})
 	m.Group("/users", func(r martini.Router) {
 
-		r.Get("/:page.html", func(params martini.Params, r acerender.Render) {
-			r.AceOk("layout:"+params["page"], nil)
+		r.Get("/:page.html", alreadyLoggedIn, func(params martini.Params, r acerender.Render) {
+			r.AceOk("layout:users_"+params["page"], nil)
 		})
 		r.Post("/register", alreadyLoggedIn, func(res http.ResponseWriter, req *http.Request, session Session) {
 			email := req.FormValue("email")
@@ -106,6 +98,13 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini) {
 			res.Header().Set("Location", "/users/login.html")
 			res.WriteHeader(http.StatusFound)
 		})
+	})
+	m.Group("/services", func(r martini.Router) {
+
+		r.Get("/:page.html", func(params martini.Params, r acerender.Render) {
+			r.AceOk("layout:services_"+params["page"], nil)
+		})
+
 	})
 
 	m.Post("/analytics/send", func(res http.ResponseWriter, req *http.Request) {
