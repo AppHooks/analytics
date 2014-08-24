@@ -2,9 +2,15 @@
 html lang=en
   head
     title Analytics
-    link rel=stylesheet href=/css/foundation.min.css
+    link rel=stylesheet href=/css/bootstrap.css
+    link rel=stylesheet href=/css/bootstrap-theme.css
 
   body
+    nav.navbar.navbar-default role="navigation"
+      .container-fluid
+        .navbar-header
+          a.navbar-brand href="/" Analytics
+    
     .container
       = yield main
 

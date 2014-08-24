@@ -35,7 +35,12 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini) {
 	}
 
 	aggregator := Aggregator{services}
-	m.Use(acerender.Renderer(&ace.Options{BaseDir: "public/templates"}))
+
+	templateOptions := &ace.Options{BaseDir: "public/templates"}
+	if martini.Env == martini.Dev {
+		templateOptions.DynamicReload = true
+	}
+	m.Use(acerender.Renderer(templateOptions))
 
 	store := NewCookieStore([]byte("secret"))
 	store.Options(Options{

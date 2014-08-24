@@ -1,15 +1,10 @@
 = content main
   .row
-    .small-offset-3.small-6.columns
-      form action="/users/login" method="post"
-        .row
-          .small-12.columns
-            label Email 
-              input type="text" placeholder="Email Address" name="email"
-        .row
-          .small-12.columns
-            label Password
-              input type="password" placeholder="Password" name="password"
-        .row
-          .small-12.columns
-            button.small Login
+    .col-xs-12.col-sm-4.col-sm-offset-4
+      form role="form" action="/users/login" method="post"
+        .form-group
+          input.form-control type="email" placeholder="Email Address" name="email"
+        .form-group
+          input.form-control type="password" placeholder="Password" name="password"
+        button.btn.btn-default type="submit" Login
+
