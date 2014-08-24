@@ -152,7 +152,7 @@ var _ = Describe("Server", func() {
 
 	})
 
-	Context("Services", func() {
+	PContext("Services", func() {
 
 		It("should add service to user object", func() {
 		})
