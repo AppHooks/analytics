@@ -25,7 +25,6 @@ func GenerateFixtures() (db gorm.DB) {
 
 	db, _ = gorm.Open("sqlite3", "/tmp/analytics.db")
 	models.NewUser(&db, "admin@email.com", "password")
-	models.NewService(&db, "")
 
 	return
 }
@@ -94,16 +93,25 @@ var _ = Describe("Server", func() {
 
 	Describe("User register", func() {
 
-		It("should redirect to index page when success", func() {
-			data := url.Values{}
-			data.Set("email", "user@email.com")
-			data.Set("password", "password")
-			data.Set("confirm", "password")
+		createRegisterData := func(email string, password string, confirm string) url.Values {
+			data := url.Values{
+				"email":    []string{email},
+				"password": []string{password},
+				"confirm":  []string{confirm},
+			}
+			return data
+		}
 
-			res := httptest.NewRecorder()
+		createRegisterRequest := func(data url.Values) *http.Request {
 			req, _ := http.NewRequest("POST", "/users/register", bytes.NewBufferString(data.Encode()))
-			req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+			req.Header.Add("Context-Type", "application/x-www-form-urlencoded")
 			req.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
+			return req
+		}
+
+		It("should redirect to index page when success", func() {
+			res := httptest.NewRecorder()
+			req := createRegisterRequest(createRegisterData("user@email.com", "password", "password"))
 
 			m.ServeHTTP(res, req)
 
@@ -112,21 +120,23 @@ var _ = Describe("Server", func() {
 		})
 
 		It("should redirect back to register page when validate email fail", func() {
-			data := url.Values{}
-			data.Set("email", "user")
-			data.Set("password", "password")
-			data.Set("confirm", "password")
-
 			res := httptest.NewRecorder()
-			req, _ := http.NewRequest("POST", "/users/register", bytes.NewBufferString(data.Encode()))
-			req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-			req.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
+			req := createRegisterRequest(createRegisterData("user", "password", "password"))
 
 			m.ServeHTTP(res, req)
 
 			Expect(res.Code).To(Equal(http.StatusFound))
 			Expect(res.Header().Get("Location")).To(Equal("/users/register.html"))
+		})
 
+		It("should redirect back to register page when user is already exists", func() {
+			res := httptest.NewRecorder()
+			req := createRegisterRequest(createRegisterData("email@admin.com", "password", "password"))
+
+			m.ServeHTTP(res, req)
+
+			Expect(res.Code).To(Equal(http.StatusFound))
+			Expect(res.Header().Get("Location")).To(Equal("/users/register.html"))
 		})
 
 	})
