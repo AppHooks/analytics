@@ -9,14 +9,14 @@ import (
 
 var _ = Describe("EmailValidator", func() {
 
-	Describe("#ValidateEmail", func() {
+	Describe("#IsEmail", func() {
 
 		It("should return true for normal email", func() {
-			Expect(ValidateEmail("normal@mail.com")).To(BeTrue())
+			Expect(IsEmail("normal@mail.com")).To(BeTrue())
 		})
 
 		It("should return false for no domain email", func() {
-			Expect(ValidateEmail("nodomain")).To(BeFalse())
+			Expect(IsEmail("nodomain")).To(BeFalse())
 		})
 
 	})
