@@ -10,6 +10,14 @@ html lang=en
       .container-fluid
         .navbar-header
           a.navbar-brand href="/" Analytics
+        .navbar-collapse.collapse
+          ul.nav.navbar-nav.navbar-right
+            li
+              {{if .Get "user"}}
+              a.navbar-link href="/users/logout" Logout
+              {{else}}
+              a.navbar-link href="/users/login.html" Login
+              {{end}}
     
     .container
       = yield main

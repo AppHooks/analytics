@@ -20,9 +20,10 @@ import (
 )
 
 const (
-	SESSION_USER_KEY          = "user"
-	SESSION_INTERNAL_USER_KEY = "_user"
+	SESSION_USER_KEY = "user"
 )
+
+type TemplateData map[string]interface{}
 
 func Analytics(db *gorm.DB, m *martini.ClassicMartini) {
 
@@ -40,7 +41,7 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini) {
 	if martini.Env == martini.Dev {
 		templateOptions.DynamicReload = true
 	}
-	m.Use(acerender.Renderer(templateOptions))
+	m.Use(acerender.Ace(templateOptions))
 
 	store := NewCookieStore([]byte("secret"))
 	store.Options(Options{
@@ -48,11 +49,28 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini) {
 		MaxAge: 86400000,
 	})
 	m.Use(Sessions("analytics", store))
+	m.Use(func(c martini.Context, session Session, data acerender.TemplateData) {
+		if userid := session.Get(SESSION_USER_KEY); userid != nil {
+			user := models.GetUserFromId(db, userid.(int64))
+			data.Set(SESSION_USER_KEY, user)
+		}
+
+		c.Next()
+	})
 
 	alreadyLoggedIn := func(c martini.Context, res http.ResponseWriter, session Session) {
-		log.Printf("User Key: %+v", session.Get(SESSION_USER_KEY))
-		if session.Get(SESSION_USER_KEY) != nil {
+		if userid := session.Get(SESSION_USER_KEY); userid != nil {
 			res.Header().Set("Location", "/services/list.html")
+			res.WriteHeader(http.StatusFound)
+			return
+		}
+
+		c.Next()
+	}
+
+	requiredLoggedIn := func(c martini.Context, res http.ResponseWriter, session Session) {
+		if session.Get(SESSION_USER_KEY) == nil {
+			res.Header().Set("Location", "/users/login.html")
 			res.WriteHeader(http.StatusFound)
 			return
 		}
@@ -93,8 +111,9 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini) {
 			res.WriteHeader(http.StatusFound)
 
 		})
-		r.Get("/logout", func(res http.ResponseWriter, session Session) {
+		r.Get("/logout", func(res http.ResponseWriter, session Session, data acerender.TemplateData) {
 			session.Clear()
+			data.Clear()
 			res.Header().Set("Location", "/users/login.html")
 			res.WriteHeader(http.StatusFound)
 		})
@@ -105,7 +124,7 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini) {
 			r.AceOk("layout:services_"+params["page"], nil)
 		})
 
-	})
+	}, requiredLoggedIn)
 
 	m.Post("/analytics/send", func(res http.ResponseWriter, req *http.Request) {
 		header := res.Header()
