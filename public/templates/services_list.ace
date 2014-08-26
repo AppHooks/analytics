@@ -24,19 +24,16 @@
                         td Service1
                         td
                           .btn-group
-                            a.btn.btn-default href="/services/edit.html" Edit
                             a.btn.btn-danger href="" Remove
                       tr
                         td Service2
                         td
                           .btn-group
-                            a.btn.btn-default href="/services/edit.html" Edit
                             a.btn.btn-danger href="" Remove
                       tr
                         td Service3
                         td
                           .btn-group
-                            a.btn.btn-default href="/services/edit.html" Edit
                             a.btn.btn-danger href="" Remove
 
                 a.btn.btn-default.pull-right href="/services/add.html" Add Service
