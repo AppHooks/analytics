@@ -10,5 +10,6 @@
               input.form-control type="email" placeholder="Email Address" name="email"
             .form-group
               input.form-control type="password" placeholder="Password" name="password"
-            button.btn.btn-primary type="submit" Login
+            a href="/users/register.html" Register
+            button.btn.btn-primary.pull-right type="submit" Login
 
