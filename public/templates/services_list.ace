@@ -5,5 +5,39 @@
         .panel-heading
           h3.panel-title Services
         .panel-body
-          | Key
+          .row
+            .col-xs-12.col-md-6.col-md-offset-3
+              form
+                .form-group
+                  label for="key" Key
+                  input.form-control id="key" type="text" disabled= value={{(.Get "user").Key}}
+
+                .form-group
+                  label for="Services" Services
+                  table.table.table-striped
+                    thead
+                      tr
+                        th.col-xs-8 Name
+                        th.col-xs-4 Actions
+                    tbody
+                      tr
+                        td Service1
+                        td
+                          .btn-group
+                            a.btn.btn-default href="/services/edit.html" Edit
+                            a.btn.btn-danger href="" Remove
+                      tr
+                        td Service2
+                        td
+                          .btn-group
+                            a.btn.btn-default href="/services/edit.html" Edit
+                            a.btn.btn-danger href="" Remove
+                      tr
+                        td Service3
+                        td
+                          .btn-group
+                            a.btn.btn-default href="/services/edit.html" Edit
+                            a.btn.btn-danger href="" Remove
+
+                a.btn.btn-default.pull-right href="/services/add.html" Add Service
 
