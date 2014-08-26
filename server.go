@@ -84,6 +84,9 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini) {
 	})
 	m.Group("/users", func(r martini.Router) {
 
+		r.Get("/profile.html", requiredLoggedIn, func(r acerender.Render) {
+			r.AceOk("layout:users_profile", nil)
+		})
 		r.Get("/:page.html", alreadyLoggedIn, func(params martini.Params, r acerender.Render) {
 			r.AceOk("layout:users_"+params["page"], nil)
 		})
