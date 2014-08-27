@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -23,8 +22,9 @@ import (
 )
 
 const (
-	REGISTER_URL = "/users/register"
-	LOGIN_URL    = "/users/login"
+	REGISTER_URL    = "/users/register"
+	LOGIN_URL       = "/users/login"
+	ADD_SERVICE_URL = "/services/add"
 
 	LOGIN_PAGE         = "/users/login.html"
 	USER_REGISTER_PAGE = "/users/register.html"
@@ -33,13 +33,11 @@ const (
 
 func GenerateFixtures() *gorm.DB {
 	os.Remove("/tmp/analytics.db")
-	log.Println("Remove tmp database.")
 
 	db, _ := gorm.Open("sqlite3", "/tmp/analytics.db")
 	db.CreateTable(models.User{})
 	user, _ := models.NewUser(&db, "admin@email.com", "password")
 	user.Save()
-	log.Printf("New user: %+v\n", user)
 
 	return &db
 }
@@ -53,12 +51,15 @@ func CreatePostFormRequest(url string, data *url.Values) *http.Request {
 
 var _ = Describe("Server", func() {
 
-	var m *martini.ClassicMartini
+	var (
+		m  *martini.ClassicMartini
+		db *gorm.DB
+	)
 
 	BeforeEach(func() {
 		m = martini.Classic()
 
-		db := GenerateFixtures()
+		db = GenerateFixtures()
 		main.Analytics(db, m)
 	})
 
@@ -152,12 +153,30 @@ var _ = Describe("Server", func() {
 
 	})
 
-	PContext("Services", func() {
+	FContext("Services", func() {
 
 		It("should add service to user object", func() {
+			res := httptest.NewRecorder()
+			req := CreatePostFormRequest(ADD_SERVICE_URL, &url.Values{})
+
+			m.ServeHTTP(res, req)
+
+			body, _ := ioutil.ReadAll(res.Body)
+
+			expectedMap := map[string]interface{}{
+				"success": true,
+			}
+			expectedBytes, _ := json.Marshal(expectedMap)
+
+			Expect(res.Code).To(Equal(http.StatusFound))
+			Expect(res.Header().Get("Location")).To(Equal(SERVICE_LIST_PAGE))
+			Expect(string(body)).To(Equal(string(expectedBytes)))
+
+			user := models.GetUserFromEmail(db, "admin@email.com")
+			Expect(len(user.Services)).To(Equal(1))
 		})
 
-		It("should send data to user services", func() {
+		PIt("should send data to user services", func() {
 			prepare := map[string]interface{}{
 				"event": "name",
 				"data": map[string]interface{}{
