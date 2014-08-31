@@ -141,11 +141,18 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini) {
 			})
 			db.Model(user).Association("Services").Append(service)
 
-			res.Header().Set(HEADER_LOCATION, SERVICE_LIST_PAGE)
+			header := res.Header()
+			header.Set(HEADER_LOCATION, SERVICE_LIST_PAGE)
+			header.Set(HEADER_CONTENT_TYPE, "application/json")
 			res.WriteHeader(http.StatusFound)
 
 			output, _ := json.Marshal(map[string]interface{}{"success": true})
 			fmt.Fprintf(res, string(output))
+		})
+
+		r.Post("/send/:key", func(params martini.Params, res http.ResponseWriter, req *http.Request) {
+			user := models.GetUserFromKey(db, params["key"])
+			log.Printf("User: %+v", user)
 		})
 
 	}, requiredLoggedIn)

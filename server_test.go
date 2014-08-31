@@ -32,7 +32,7 @@ const (
 	SERVICE_LIST_PAGE  = "/services/list.html"
 )
 
-func GenerateFixtures() (*gorm.DB, int64) {
+func GenerateFixtures() (*gorm.DB, *models.User) {
 	os.Remove("/tmp/analytics.db")
 
 	db, _ := gorm.Open("sqlite3", "/tmp/analytics.db")
@@ -42,7 +42,12 @@ func GenerateFixtures() (*gorm.DB, int64) {
 	user, _ := models.NewUser(&db, "admin@email.com", "password")
 	user.Save()
 
-	return &db, user.Id
+	service := models.NewService(&db, "other", "other", map[string]interface{}{
+		"key": "sample",
+	})
+	db.Model(user).Association("Services").Append(service)
+
+	return &db, user
 }
 
 func CreatePostFormRequest(url string, data *url.Values) *http.Request {
@@ -55,16 +60,16 @@ func CreatePostFormRequest(url string, data *url.Values) *http.Request {
 var _ = Describe("Server", func() {
 
 	var (
-		m      *martini.ClassicMartini
-		db     *gorm.DB
-		userId int64
+		m         *martini.ClassicMartini
+		db        *gorm.DB
+		firstUser *models.User
 	)
 
 	Describe("Not logged in path", func() {
 		BeforeEach(func() {
 			m = martini.Classic()
 
-			db, userId = GenerateFixtures()
+			db, firstUser = GenerateFixtures()
 			main.Analytics(db, m)
 		})
 
@@ -163,11 +168,11 @@ var _ = Describe("Server", func() {
 		BeforeEach(func() {
 			m = martini.Classic()
 
-			db, userId = GenerateFixtures()
+			db, firstUser = GenerateFixtures()
 			main.Analytics(db, m)
 			m.Use(func(s Session, d acerender.TemplateData) {
 				s.Set(main.SESSION_USER_KEY, "0")
-				user := models.GetUserFromId(db, userId)
+				user := models.GetUserFromId(db, firstUser.Id)
 				d.Set(main.SESSION_USER_KEY, user)
 			})
 		})
@@ -196,9 +201,9 @@ var _ = Describe("Server", func() {
 				Expect(string(body)).To(Equal(string(expectedBytes)))
 
 				var services []models.Service
-				user := models.GetUserFromId(db, userId)
+				user := models.GetUserFromId(db, firstUser.Id)
 				db.Model(user).Related(&services)
-				Expect(len(services)).To(Equal(1))
+				Expect(len(services)).To(Equal(2))
 
 			})
 
@@ -215,7 +220,7 @@ var _ = Describe("Server", func() {
 				data := string(b)
 
 				res := httptest.NewRecorder()
-				req, _ := http.NewRequest("POST", "/services/send/key", bytes.NewBufferString(data))
+				req, _ := http.NewRequest("POST", "/services/send/"+firstUser.Key, bytes.NewBufferString(data))
 				req.Header.Add("Content-Type", "application/json")
 				req.Header.Add("Content-Length", strconv.Itoa(len(data)))
 

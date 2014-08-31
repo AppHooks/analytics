@@ -32,12 +32,12 @@ func (u *User) Authenticate(password string) bool {
 	return u.Password == hex.EncodeToString(sum[:])
 }
 
-func GetUserFromEmail(db *gorm.DB, email string) *User {
+func getUserFromField(db *gorm.DB, field string, value interface{}) *User {
 	var (
 		user  User
 		total int
 	)
-	db.Where("email = ?", email).First(&user).Count(&total)
+	db.Where(field+" = ?", value).First(&user).Count(&total)
 
 	if total == 0 {
 		return nil
@@ -46,17 +46,16 @@ func GetUserFromEmail(db *gorm.DB, email string) *User {
 	return &user
 }
 
+func GetUserFromEmail(db *gorm.DB, email string) *User {
+	return getUserFromField(db, "email", email)
+}
+
+func GetUserFromKey(db *gorm.DB, key string) *User {
+	return getUserFromField(db, "key", key)
+}
+
 func GetUserFromId(db *gorm.DB, id int64) *User {
-	var (
-		user  User
-		total int
-	)
-	db.Where("id = ?", id).First(&user).Count(&total)
-	if total == 0 {
-		return nil
-	}
-	user.BaseModel = NewBaseModel(db, &user)
-	return &user
+	return getUserFromField(db, "id", id)
 }
 
 func IsUserExists(db *gorm.DB, email string) bool {
