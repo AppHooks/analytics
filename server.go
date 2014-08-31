@@ -20,10 +20,18 @@ import (
 )
 
 const (
-	SESSION_USER_KEY = "user"
-)
+	HEADER_LOCATION     = "Location"
+	HEADER_CONTENT_TYPE = "Content-Type"
 
-type TemplateData map[string]interface{}
+	SESSION_USER_KEY = "user"
+
+	USER_REGISTER_PAGE = "/users/register.html"
+	USER_LOGIN_PAGE    = "/users/login.html"
+	SERVICE_LIST_PAGE  = "/services/list.html"
+	SERVICE_ADD_PAGE   = "/services/add.html"
+
+	SERVICE_ADD_ROUTE = "/services/add"
+)
 
 func Analytics(db *gorm.DB, m *martini.ClassicMartini) {
 
@@ -60,7 +68,7 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini) {
 
 	alreadyLoggedIn := func(c martini.Context, res http.ResponseWriter, session Session) {
 		if userid := session.Get(SESSION_USER_KEY); userid != nil {
-			res.Header().Set("Location", "/services/list.html")
+			res.Header().Set(HEADER_LOCATION, SERVICE_LIST_PAGE)
 			res.WriteHeader(http.StatusFound)
 			return
 		}
@@ -70,7 +78,7 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini) {
 
 	requiredLoggedIn := func(c martini.Context, res http.ResponseWriter, session Session) {
 		if session.Get(SESSION_USER_KEY) == nil {
-			res.Header().Set("Location", "/users/login.html")
+			res.Header().Set(HEADER_LOCATION, USER_LOGIN_PAGE)
 			res.WriteHeader(http.StatusFound)
 			return
 		}
@@ -79,7 +87,7 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini) {
 	}
 
 	m.Get("/", alreadyLoggedIn, func(res http.ResponseWriter) {
-		res.Header().Set("Location", "/users/login.html")
+		res.Header().Set(HEADER_LOCATION, USER_LOGIN_PAGE)
 		res.WriteHeader(http.StatusFound)
 	})
 	m.Group("/users", func(r martini.Router) {
@@ -96,20 +104,19 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini) {
 
 			if user, err := models.NewUser(db, email, password); !models.IsUserExists(db, email) && err == nil {
 				user.Save()
-				res.Header().Set("Location", "/services/list.html")
+				res.Header().Set(HEADER_LOCATION, SERVICE_LIST_PAGE)
 			} else {
-				res.Header().Set("Location", "/users/register.html")
+				res.Header().Set(HEADER_LOCATION, USER_REGISTER_PAGE)
 			}
 			res.WriteHeader(http.StatusFound)
 		})
 		r.Post("/login", alreadyLoggedIn, func(res http.ResponseWriter, req *http.Request, session Session) {
 			user := models.GetUserFromEmail(db, req.FormValue("email"))
 			if user != nil && user.Authenticate(req.FormValue("password")) {
-				log.Printf("User %v is logged in\n", user.Email)
 				session.Set(SESSION_USER_KEY, user.Id)
-				res.Header().Set("Location", "/services/list.html")
+				res.Header().Set(HEADER_LOCATION, SERVICE_LIST_PAGE)
 			} else {
-				res.Header().Set("Location", "/users/login.html")
+				res.Header().Set(HEADER_LOCATION, USER_LOGIN_PAGE)
 			}
 			res.WriteHeader(http.StatusFound)
 
@@ -117,7 +124,7 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini) {
 		r.Get("/logout", func(res http.ResponseWriter, session Session, data acerender.TemplateData) {
 			session.Clear()
 			data.Clear()
-			res.Header().Set("Location", "/users/login.html")
+			res.Header().Set(HEADER_LOCATION, USER_LOGIN_PAGE)
 			res.WriteHeader(http.StatusFound)
 		})
 	})
@@ -125,6 +132,20 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini) {
 
 		r.Get("/:page.html", func(params martini.Params, r acerender.Render) {
 			r.AceOk("layout:services_"+params["page"], nil)
+		})
+
+		r.Post("/add", func(res http.ResponseWriter, req *http.Request, data acerender.TemplateData) {
+			user := data.Get(SESSION_USER_KEY).(*models.User)
+			service := models.NewService(db, req.FormValue("name"), req.FormValue("type"), map[string]interface{}{
+				"key": req.FormValue("key"),
+			})
+			db.Model(user).Association("Services").Append(service)
+
+			res.Header().Set(HEADER_LOCATION, SERVICE_LIST_PAGE)
+			res.WriteHeader(http.StatusFound)
+
+			output, _ := json.Marshal(map[string]interface{}{"success": true})
+			fmt.Fprintf(res, string(output))
 		})
 
 	}, requiredLoggedIn)
@@ -162,6 +183,7 @@ func main() {
 	}
 
 	db.CreateTable(models.User{})
+	db.CreateTable(models.Service{})
 
 	m := martini.Classic()
 	Analytics(&db, m)

@@ -13,12 +13,12 @@ import (
 )
 
 type User struct {
-	BaseModel
-	Id       int64
-	Email    string
-	Password string
-	Key      string
-	Services []Service
+	BaseModel `sql:"-"`
+	Id        int64
+	Email     string
+	Password  string
+	Key       string
+	Services  []Service
 }
 
 func (u *User) ToMap() map[string]interface{} {
@@ -42,13 +42,21 @@ func GetUserFromEmail(db *gorm.DB, email string) *User {
 	if total == 0 {
 		return nil
 	}
+	user.BaseModel = NewBaseModel(db, &user)
 	return &user
 }
 
-func GetUserFromId(db *gorm.DB, id int64) User {
-	var user User
-	db.First(&user, id)
-	return user
+func GetUserFromId(db *gorm.DB, id int64) *User {
+	var (
+		user  User
+		total int
+	)
+	db.Where("id = ?", id).First(&user).Count(&total)
+	if total == 0 {
+		return nil
+	}
+	user.BaseModel = NewBaseModel(db, &user)
+	return &user
 }
 
 func IsUserExists(db *gorm.DB, email string) bool {

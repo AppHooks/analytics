@@ -17,7 +17,7 @@ var _ = Describe("Models/Service", func() {
 				"key1": "value1",
 				"key2": "value2",
 			}
-			service := NewService(nil, "mockservice", configuration)
+			service := NewService(nil, "mockservice", SERVICE_OTHER, configuration)
 
 			bytes, _ := json.Marshal(configuration)
 			Expect(service.Configuration).To(Equal(string(bytes)))
@@ -31,11 +31,12 @@ var _ = Describe("Models/Service", func() {
 
 			It("should export all public properties", func() {
 
-				service := NewService(nil, "mockservice", map[string]interface{}{
+				service := NewService(nil, "mockservice", SERVICE_OTHER, map[string]interface{}{
 					"key": "value",
 				})
 				Expect(service.ToMap()).To(Equal(map[string]interface{}{
-					"name": "mockservice",
+					"name":    "mockservice",
+					"service": "other",
 				}))
 
 			})

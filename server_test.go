@@ -15,6 +15,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/llun/analytics"
 	"github.com/llun/analytics/models"
+	"github.com/llun/martini-acerender"
 
 	. "github.com/martini-contrib/sessions"
 	. "github.com/onsi/ginkgo"
@@ -31,15 +32,17 @@ const (
 	SERVICE_LIST_PAGE  = "/services/list.html"
 )
 
-func GenerateFixtures() *gorm.DB {
+func GenerateFixtures() (*gorm.DB, int64) {
 	os.Remove("/tmp/analytics.db")
 
 	db, _ := gorm.Open("sqlite3", "/tmp/analytics.db")
+	db.CreateTable(models.Service{})
 	db.CreateTable(models.User{})
+
 	user, _ := models.NewUser(&db, "admin@email.com", "password")
 	user.Save()
 
-	return &db
+	return &db, user.Id
 }
 
 func CreatePostFormRequest(url string, data *url.Values) *http.Request {
@@ -52,163 +55,187 @@ func CreatePostFormRequest(url string, data *url.Values) *http.Request {
 var _ = Describe("Server", func() {
 
 	var (
-		m  *martini.ClassicMartini
-		db *gorm.DB
+		m      *martini.ClassicMartini
+		db     *gorm.DB
+		userId int64
 	)
 
-	BeforeEach(func() {
-		m = martini.Classic()
+	Describe("Not logged in path", func() {
+		BeforeEach(func() {
+			m = martini.Classic()
 
-		db = GenerateFixtures()
-		main.Analytics(db, m)
-	})
-
-	Describe("Index", func() {
-
-		It("should redirect to login when user doesn't login yet", func() {
-
-			res := httptest.NewRecorder()
-			req, _ := http.NewRequest("GET", "/", nil)
-
-			m.ServeHTTP(res, req)
-
-			Expect(res.Code).To(Equal(http.StatusFound))
-			Expect(res.Header().Get("Location")).To(Equal(LOGIN_PAGE))
-
+			db, userId = GenerateFixtures()
+			main.Analytics(db, m)
 		})
 
-		It("should redirect to list services when user is already login", func() {
+		Describe("Index", func() {
 
-			m.Use(func(c martini.Context, session Session) {
-				// Emulate user is already logged in.
-				session.Set(main.SESSION_USER_KEY, "user")
-				c.Next()
-			})
-			res := httptest.NewRecorder()
-			req, _ := http.NewRequest("GET", "/", nil)
+			It("should redirect to login when user doesn't login yet", func() {
 
-			m.ServeHTTP(res, req)
+				res := httptest.NewRecorder()
+				req, _ := http.NewRequest("GET", "/", nil)
 
-			Expect(res.Code).To(Equal(http.StatusFound))
-			Expect(res.Header().Get("Location")).To(Equal(SERVICE_LIST_PAGE))
+				m.ServeHTTP(res, req)
 
-		})
+				Expect(res.Code).To(Equal(http.StatusFound))
+				Expect(res.Header().Get("Location")).To(Equal(LOGIN_PAGE))
 
-	})
-
-	Describe("User login", func() {
-		It("should redirect to index page when success", func() {
-			res := httptest.NewRecorder()
-			req := CreatePostFormRequest(LOGIN_URL, &url.Values{
-				"email":    []string{"admin@email.com"},
-				"password": []string{"password"},
 			})
 
-			m.ServeHTTP(res, req)
+			It("should redirect to list services when user is already login", func() {
 
-			Expect(res.Code).To(Equal(http.StatusFound))
-			Expect(res.Header().Get("Location")).To(Equal(SERVICE_LIST_PAGE))
+				m.Use(func(c martini.Context, session Session) {
+					// Emulate user is already logged in.
+					session.Set(main.SESSION_USER_KEY, "user")
+					c.Next()
+				})
+				res := httptest.NewRecorder()
+				req, _ := http.NewRequest("GET", "/", nil)
+
+				m.ServeHTTP(res, req)
+
+				Expect(res.Code).To(Equal(http.StatusFound))
+				Expect(res.Header().Get("Location")).To(Equal(SERVICE_LIST_PAGE))
+
+			})
+
+		})
+
+		Describe("User login", func() {
+			It("should redirect to index page when success", func() {
+				res := httptest.NewRecorder()
+				req := CreatePostFormRequest(LOGIN_URL, &url.Values{
+					"email":    []string{"admin@email.com"},
+					"password": []string{"password"},
+				})
+
+				m.ServeHTTP(res, req)
+
+				Expect(res.Code).To(Equal(http.StatusFound))
+				Expect(res.Header().Get("Location")).To(Equal(SERVICE_LIST_PAGE))
+			})
+		})
+
+		Describe("User register", func() {
+
+			createRegisterData := func(email string, password string, confirm string) *url.Values {
+				return &url.Values{
+					"email":    []string{email},
+					"password": []string{password},
+					"confirm":  []string{confirm},
+				}
+			}
+
+			It("should redirect to index page when success", func() {
+				res := httptest.NewRecorder()
+				req := CreatePostFormRequest(REGISTER_URL, createRegisterData("user@email.com", "password", "password"))
+
+				m.ServeHTTP(res, req)
+
+				Expect(res.Code).To(Equal(http.StatusFound))
+				Expect(res.Header().Get("Location")).To(Equal(SERVICE_LIST_PAGE))
+			})
+
+			It("should redirect back to register page when validate email fail", func() {
+				res := httptest.NewRecorder()
+				req := CreatePostFormRequest(REGISTER_URL, createRegisterData("user", "password", "password"))
+
+				m.ServeHTTP(res, req)
+
+				Expect(res.Code).To(Equal(http.StatusFound))
+				Expect(res.Header().Get("Location")).To(Equal("/users/register.html"))
+			})
+
+			It("should redirect back to register page when user is already exists", func() {
+				res := httptest.NewRecorder()
+				req := CreatePostFormRequest(REGISTER_URL, createRegisterData("admin@email.com", "password", "password"))
+
+				m.ServeHTTP(res, req)
+
+				Expect(res.Code).To(Equal(http.StatusFound))
+				Expect(res.Header().Get("Location")).To(Equal(USER_REGISTER_PAGE))
+			})
+
 		})
 	})
 
-	Describe("User register", func() {
+	Describe("Logged in path", func() {
+		BeforeEach(func() {
+			m = martini.Classic()
 
-		createRegisterData := func(email string, password string, confirm string) *url.Values {
-			return &url.Values{
-				"email":    []string{email},
-				"password": []string{password},
-				"confirm":  []string{confirm},
-			}
-		}
-
-		It("should redirect to index page when success", func() {
-			res := httptest.NewRecorder()
-			req := CreatePostFormRequest(REGISTER_URL, createRegisterData("user@email.com", "password", "password"))
-
-			m.ServeHTTP(res, req)
-
-			Expect(res.Code).To(Equal(http.StatusFound))
-			Expect(res.Header().Get("Location")).To(Equal(SERVICE_LIST_PAGE))
+			db, userId = GenerateFixtures()
+			main.Analytics(db, m)
+			m.Use(func(s Session, d acerender.TemplateData) {
+				s.Set(main.SESSION_USER_KEY, "0")
+				user := models.GetUserFromId(db, userId)
+				d.Set(main.SESSION_USER_KEY, user)
+			})
 		})
 
-		It("should redirect back to register page when validate email fail", func() {
-			res := httptest.NewRecorder()
-			req := CreatePostFormRequest(REGISTER_URL, createRegisterData("user", "password", "password"))
+		Context("Services", func() {
 
-			m.ServeHTTP(res, req)
+			It("should add service to user object", func() {
+				res := httptest.NewRecorder()
+				req := CreatePostFormRequest(ADD_SERVICE_URL, &url.Values{
+					"name": []string{"Service1"},
+					"type": []string{"other"},
+					"key":  []string{"key"},
+				})
 
-			Expect(res.Code).To(Equal(http.StatusFound))
-			Expect(res.Header().Get("Location")).To(Equal("/users/register.html"))
+				m.ServeHTTP(res, req)
+
+				body, _ := ioutil.ReadAll(res.Body)
+
+				expectedMap := map[string]interface{}{
+					"success": true,
+				}
+				expectedBytes, _ := json.Marshal(expectedMap)
+
+				Expect(res.Code).To(Equal(http.StatusFound))
+				Expect(res.Header().Get("Location")).To(Equal(SERVICE_LIST_PAGE))
+				Expect(string(body)).To(Equal(string(expectedBytes)))
+
+				var services []models.Service
+				user := models.GetUserFromId(db, userId)
+				db.Model(user).Related(&services)
+				Expect(len(services)).To(Equal(1))
+
+			})
+
+			It("should send data to user services", func() {
+				prepare := map[string]interface{}{
+					"event": "name",
+					"data": map[string]interface{}{
+						"key1": "value1",
+						"key2": "value2",
+					},
+				}
+
+				b, _ := json.Marshal(prepare)
+				data := string(b)
+
+				res := httptest.NewRecorder()
+				req, _ := http.NewRequest("POST", "/services/send/key", bytes.NewBufferString(data))
+				req.Header.Add("Content-Type", "application/json")
+				req.Header.Add("Content-Length", strconv.Itoa(len(data)))
+
+				m.ServeHTTP(res, req)
+
+				Expect(res.Code).To(Equal(http.StatusFound))
+
+				body, _ := ioutil.ReadAll(res.Body)
+				output := map[string]interface{}{
+					"success": true,
+					"services": map[string]interface{}{
+						"service1": true,
+						"service2": true,
+					},
+				}
+				outputBytes, _ := json.Marshal(output)
+				Expect(string(body)).To(Equal(string(outputBytes)))
+			})
+
 		})
-
-		It("should redirect back to register page when user is already exists", func() {
-			res := httptest.NewRecorder()
-			req := CreatePostFormRequest(REGISTER_URL, createRegisterData("admin@email.com", "password", "password"))
-
-			m.ServeHTTP(res, req)
-
-			Expect(res.Code).To(Equal(http.StatusFound))
-			Expect(res.Header().Get("Location")).To(Equal(USER_REGISTER_PAGE))
-		})
-
-	})
-
-	FContext("Services", func() {
-
-		It("should add service to user object", func() {
-			res := httptest.NewRecorder()
-			req := CreatePostFormRequest(ADD_SERVICE_URL, &url.Values{})
-
-			m.ServeHTTP(res, req)
-
-			body, _ := ioutil.ReadAll(res.Body)
-
-			expectedMap := map[string]interface{}{
-				"success": true,
-			}
-			expectedBytes, _ := json.Marshal(expectedMap)
-
-			Expect(res.Code).To(Equal(http.StatusFound))
-			Expect(res.Header().Get("Location")).To(Equal(SERVICE_LIST_PAGE))
-			Expect(string(body)).To(Equal(string(expectedBytes)))
-
-			user := models.GetUserFromEmail(db, "admin@email.com")
-			Expect(len(user.Services)).To(Equal(1))
-		})
-
-		PIt("should send data to user services", func() {
-			prepare := map[string]interface{}{
-				"event": "name",
-				"data": map[string]interface{}{
-					"key1": "value1",
-					"key2": "value2",
-				},
-			}
-
-			b, _ := json.Marshal(prepare)
-			data := string(b)
-
-			res := httptest.NewRecorder()
-			req, _ := http.NewRequest("POST", "/services/send/key", bytes.NewBufferString(data))
-			req.Header.Add("Content-Type", "application/json")
-			req.Header.Add("Content-Length", strconv.Itoa(len(data)))
-
-			m.ServeHTTP(res, req)
-
-			Expect(res.Code).To(Equal(http.StatusFound))
-
-			body, _ := ioutil.ReadAll(res.Body)
-			output := map[string]interface{}{
-				"success": true,
-				"services": map[string]interface{}{
-					"service1": true,
-					"service2": true,
-				},
-			}
-			outputBytes, _ := json.Marshal(output)
-			Expect(string(body)).To(Equal(string(outputBytes)))
-		})
-
 	})
 
 })
