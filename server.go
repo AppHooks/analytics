@@ -159,7 +159,6 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini, services map[string]Facto
 			}
 
 			aggregator := &Aggregator{targets}
-
 			fmt.Fprintf(res, aggregator.Send(input, req.RemoteAddr))
 		})
 

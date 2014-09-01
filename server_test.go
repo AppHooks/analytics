@@ -45,6 +45,7 @@ func CreatePostFormRequest(url string, data *url.Values) *http.Request {
 	req, _ := http.NewRequest("POST", url, strings.NewReader(data.Encode()))
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
+	req.RemoteAddr = "127.0.0.1"
 	return req
 }
 
@@ -161,7 +162,7 @@ var _ = Describe("Server", func() {
 
 		BeforeEach(func() {
 			m = martini.Classic()
-			mockService = &MockService{}
+			mockService = &MockService{Name: "mock"}
 
 			db, firstUser = GenerateFixtures()
 			Analytics(db, m, map[string]Factory{
@@ -220,6 +221,7 @@ var _ = Describe("Server", func() {
 
 				res := httptest.NewRecorder()
 				req, _ := http.NewRequest("POST", "/services/send/"+firstUser.Key, bytes.NewBufferString(data))
+				req.RemoteAddr = "127.0.0.1"
 				req.Header.Add("Content-Type", "application/json")
 				req.Header.Add("Content-Length", strconv.Itoa(len(data)))
 
