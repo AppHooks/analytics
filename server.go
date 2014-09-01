@@ -122,6 +122,14 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini, services map[string]Facto
 	})
 	m.Group("/services", func(r martini.Router) {
 
+		r.Get("/list.html", func(r acerender.Render, data acerender.TemplateData) {
+			services := models.GetServicesForUser(db, data.Get(SESSION_USER_KEY).(*models.User))
+			r.AceOk("layout:services_list", &acerender.AceData{
+				map[string]interface{}{
+					"services": services,
+				},
+			})
+		})
 		r.Get("/:page.html", func(params martini.Params, r acerender.Render) {
 			r.AceOk("layout:services_"+params["page"], nil)
 		})

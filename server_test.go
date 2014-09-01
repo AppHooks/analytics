@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -33,10 +34,12 @@ func GenerateFixtures() (*gorm.DB, *models.User) {
 	user, _ := models.NewUser(&db, "admin@email.com", "password")
 	user.Save()
 
-	service := models.NewService(&db, "other", "mock", map[string]interface{}{
+	db.Model(user).Association("Services").Append(models.NewService(&db, "other1", "mock", map[string]interface{}{
 		"key": "sample",
-	})
-	db.Model(user).Association("Services").Append(service)
+	}))
+	db.Model(user).Association("Services").Append(models.NewService(&db, "other2", "mock", map[string]interface{}{
+		"key": "sample",
+	}))
 
 	return &db, user
 }
@@ -203,7 +206,7 @@ var _ = Describe("Server", func() {
 				var services []models.Service
 				user := models.GetUserFromId(db, firstUser.Id)
 				db.Model(user).Related(&services)
-				Expect(len(services)).To(Equal(2))
+				Expect(len(services)).To(Equal(3))
 
 			})
 
@@ -233,7 +236,8 @@ var _ = Describe("Server", func() {
 				output := map[string]interface{}{
 					"success": true,
 					"services": map[string]interface{}{
-						"mock": true,
+						"other1": true,
+						"other2": true,
 					},
 				}
 				outputBytes, _ := json.Marshal(output)
@@ -246,6 +250,26 @@ var _ = Describe("Server", func() {
 					},
 					IP: "127.0.0.1",
 				}))
+			})
+
+			It("should render list of services that user own", func() {
+				res := httptest.NewRecorder()
+				req, _ := http.NewRequest("GET", "/services/list.html", nil)
+
+				m.ServeHTTP(res, req)
+
+				bodyBytes, _ := ioutil.ReadAll(res.Body)
+
+				Expect(res.Code).To(Equal(http.StatusOK))
+
+				re := regexp.MustCompile("<td>\\w+</td>")
+				matches := re.FindAllStringSubmatch(string(bodyBytes), -1)
+
+				founds := []string{}
+				for _, list := range matches {
+					founds = append(founds, list[1])
+				}
+				Expect(founds).To(Equal([]string{"other1", "other2"}))
 			})
 
 		})

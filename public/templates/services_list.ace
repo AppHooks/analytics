@@ -20,21 +20,14 @@
                         th.col-xs-8 Name
                         th.col-xs-4 Actions
                     tbody
+                      {{range $index, $service := .Get "services"}}
                       tr
-                        td Service1
+                        td
+                          | {{$service.Name}}
                         td
                           .btn-group
                             a.btn.btn-danger href="" Remove
-                      tr
-                        td Service2
-                        td
-                          .btn-group
-                            a.btn.btn-danger href="" Remove
-                      tr
-                        td Service3
-                        td
-                          .btn-group
-                            a.btn.btn-danger href="" Remove
+                      {{end}}
 
                 a.btn.btn-default.pull-right href="/services/add.html" Add Service
 
