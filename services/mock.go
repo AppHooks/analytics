@@ -40,10 +40,6 @@ func (m *MockService) GetName() string {
 	return m.Name
 }
 
-func (m *MockService) GetType() string {
-	return "mock"
-}
-
 func (m *MockService) GetConfiguration() map[string]interface{} {
 	return map[string]interface{}{}
 }

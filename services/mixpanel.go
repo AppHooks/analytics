@@ -41,10 +41,6 @@ func (m *Mixpanel) GetName() string {
 	return m.Name
 }
 
-func (m *Mixpanel) GetType() string {
-	return "mixpanel"
-}
-
 func (m *Mixpanel) Send(input Input) Output {
 	data, _ := m.Parse(input)
 	status, resp, _ := m.Network.Request("https://api.mixpanel.com/track/", "data="+base64.StdEncoding.EncodeToString(data))
