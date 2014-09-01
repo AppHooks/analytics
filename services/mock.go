@@ -10,13 +10,6 @@ type MockNetwork struct {
 }
 
 func (m *MockNetwork) Request(url string, data string) (status int, body string, err error) {
-
-	// url + "?" +  data
-	// url: https://api.mixpanel.com/track/
-	// data: data=somethingelse
-	// will call https://api.mixpanel.com/track/?data=somethingelse
-	// and if call is success, return 200
-
 	m.Url = url
 	m.Data = data
 	return m.MockStatus, m.MockData, m.MockError
@@ -52,4 +45,7 @@ func (m *MockService) GetConfiguration() map[string]interface{} {
 }
 
 func (m *MockService) LoadConfiguration(configuration map[string]interface{}) {
+}
+
+func (m *MockService) SetNetwork(network Network) {
 }
