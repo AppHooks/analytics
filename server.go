@@ -34,7 +34,7 @@ const (
 	USER_LOGIN_URL    = "/users/login"
 )
 
-type Factory func(configuration map[string]interface{}) Service
+type Factory func(name string, configuration map[string]interface{}) Service
 
 func Analytics(db *gorm.DB, m *martini.ClassicMartini, services map[string]Factory) {
 	templateOptions := &ace.Options{BaseDir: "public/templates"}
@@ -162,7 +162,7 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini, services map[string]Facto
 			for _, userService := range userServices {
 				data, exists := services[userService.Type]
 				if exists {
-					targets = append(targets, data(userService.GetConfiguration()))
+					targets = append(targets, data(userService.Name, userService.GetConfiguration()))
 				}
 			}
 
@@ -197,8 +197,9 @@ func main() {
 
 	network := NetworkWrapper{}
 	Analytics(&db, m, map[string]Factory{
-		"mixpanel": func(configuration map[string]interface{}) Service {
+		"mixpanel": func(name string, configuration map[string]interface{}) Service {
 			mixpanel := &Mixpanel{
+				Name:    name,
 				Network: network,
 			}
 			mixpanel.LoadConfiguration(configuration)

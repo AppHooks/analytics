@@ -19,12 +19,12 @@ var _ = Describe("Mixpanel", func() {
 
 		BeforeEach(func() {
 			mockNetwork = MockNetwork{}
-			service = Mixpanel{&mockNetwork, "token", "mixpanel"}
+			service = Mixpanel{&mockNetwork, "token", "other1"}
 		})
 
 		It("should return mixpanel as name", func() {
 			name := service.GetName()
-			Expect(name).To(Equal("MixPanel"))
+			Expect(name).To(Equal("other1"))
 		})
 	})
 
@@ -123,7 +123,7 @@ var _ = Describe("Mixpanel", func() {
 
 		It("should apply new configuration to service", func() {
 
-			service := Mixpanel{nil, "token"}
+			service := Mixpanel{nil, "token", "other1"}
 			service.LoadConfiguration(map[string]interface{}{
 				"token": "newtoken",
 			})

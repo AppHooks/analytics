@@ -161,16 +161,13 @@ var _ = Describe("Server", func() {
 
 	Describe("Logged in path", func() {
 
-		var mockService *MockService
-
 		BeforeEach(func() {
 			m = martini.Classic()
-			mockService = &MockService{Name: "mock"}
 
 			db, firstUser = GenerateFixtures()
 			Analytics(db, m, map[string]Factory{
-				"mock": func(configuration map[string]interface{}) Service {
-					return mockService
+				"mock": func(name string, configuration map[string]interface{}) Service {
+					return &MockService{Name: name}
 				},
 			})
 			m.Use(func(s Session, d acerender.TemplateData) {
@@ -242,14 +239,6 @@ var _ = Describe("Server", func() {
 				}
 				outputBytes, _ := json.Marshal(output)
 				Expect(string(body)).To(Equal(string(outputBytes)))
-				Expect(mockService.Data).To(Equal(Input{
-					Event: "name",
-					Data: map[string]interface{}{
-						"key1": "value1",
-						"key2": "value2",
-					},
-					IP: "127.0.0.1",
-				}))
 			})
 
 			It("should render list of services that user own", func() {
@@ -262,7 +251,7 @@ var _ = Describe("Server", func() {
 
 				Expect(res.Code).To(Equal(http.StatusOK))
 
-				re := regexp.MustCompile("<td>\\w+</td>")
+				re := regexp.MustCompile("<td>(\\w+)</td>")
 				matches := re.FindAllStringSubmatch(string(bodyBytes), -1)
 
 				founds := []string{}

@@ -35,8 +35,8 @@ var _ = Describe("Models/Service", func() {
 					"key": "value",
 				})
 				Expect(service.ToMap()).To(Equal(map[string]interface{}{
-					"name":    "mockservice",
-					"service": "other",
+					"name": "mockservice",
+					"type": "other",
 				}))
 
 			})
