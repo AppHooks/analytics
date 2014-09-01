@@ -29,24 +29,14 @@ const (
 	SERVICE_LIST_PAGE  = "/services/list.html"
 	SERVICE_ADD_PAGE   = "/services/add.html"
 
-	SERVICE_ADD_ROUTE = "/services/add"
+	SERVICE_ADD_URL   = "/services/add"
+	USER_REGISTER_URL = "/users/register"
+	USER_LOGIN_URL    = "/users/login"
 )
 
 type Factory func(configuration map[string]interface{}) Service
 
-func Analytics(db *gorm.DB, m *martini.ClassicMartini) {
-
-	network := NetworkWrapper{}
-
-	services := map[string]Factory{
-		"mixpanel": func(configuration map[string]interface{}) Service {
-			mixpanel := &Mixpanel{}
-			mixpanel.SetNetwork(network)
-			mixpanel.LoadConfiguration(configuration)
-			return mixpanel
-		},
-	}
-
+func Analytics(db *gorm.DB, m *martini.ClassicMartini, services map[string]Factory) {
 	templateOptions := &ace.Options{BaseDir: "public/templates"}
 	if martini.Env == martini.Dev {
 		templateOptions.DynamicReload = true
@@ -197,6 +187,16 @@ func main() {
 	db.CreateTable(models.Service{})
 
 	m := martini.Classic()
-	Analytics(&db, m)
+
+	network := NetworkWrapper{}
+	Analytics(&db, m, map[string]Factory{
+		"mixpanel": func(configuration map[string]interface{}) Service {
+			mixpanel := &Mixpanel{
+				Network: network,
+			}
+			mixpanel.LoadConfiguration(configuration)
+			return mixpanel
+		},
+	})
 	m.Run()
 }

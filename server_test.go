@@ -13,23 +13,13 @@ import (
 
 	"github.com/go-martini/martini"
 	"github.com/jinzhu/gorm"
-	"github.com/llun/analytics"
 	"github.com/llun/analytics/models"
 	"github.com/llun/martini-acerender"
 
+	. "github.com/llun/analytics"
 	. "github.com/martini-contrib/sessions"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-)
-
-const (
-	REGISTER_URL    = "/users/register"
-	LOGIN_URL       = "/users/login"
-	ADD_SERVICE_URL = "/services/add"
-
-	LOGIN_PAGE         = "/users/login.html"
-	USER_REGISTER_PAGE = "/users/register.html"
-	SERVICE_LIST_PAGE  = "/services/list.html"
 )
 
 func GenerateFixtures() (*gorm.DB, *models.User) {
@@ -70,7 +60,7 @@ var _ = Describe("Server", func() {
 			m = martini.Classic()
 
 			db, firstUser = GenerateFixtures()
-			main.Analytics(db, m)
+			Analytics(db, m, map[string]Factory{})
 		})
 
 		Describe("Index", func() {
@@ -83,7 +73,7 @@ var _ = Describe("Server", func() {
 				m.ServeHTTP(res, req)
 
 				Expect(res.Code).To(Equal(http.StatusFound))
-				Expect(res.Header().Get("Location")).To(Equal(LOGIN_PAGE))
+				Expect(res.Header().Get(HEADER_LOCATION)).To(Equal(USER_LOGIN_PAGE))
 
 			})
 
@@ -91,7 +81,7 @@ var _ = Describe("Server", func() {
 
 				m.Use(func(c martini.Context, session Session) {
 					// Emulate user is already logged in.
-					session.Set(main.SESSION_USER_KEY, "user")
+					session.Set(SESSION_USER_KEY, "user")
 					c.Next()
 				})
 				res := httptest.NewRecorder()
@@ -100,7 +90,7 @@ var _ = Describe("Server", func() {
 				m.ServeHTTP(res, req)
 
 				Expect(res.Code).To(Equal(http.StatusFound))
-				Expect(res.Header().Get("Location")).To(Equal(SERVICE_LIST_PAGE))
+				Expect(res.Header().Get(HEADER_LOCATION)).To(Equal(SERVICE_LIST_PAGE))
 
 			})
 
@@ -109,7 +99,7 @@ var _ = Describe("Server", func() {
 		Describe("User login", func() {
 			It("should redirect to index page when success", func() {
 				res := httptest.NewRecorder()
-				req := CreatePostFormRequest(LOGIN_URL, &url.Values{
+				req := CreatePostFormRequest(USER_LOGIN_URL, &url.Values{
 					"email":    []string{"admin@email.com"},
 					"password": []string{"password"},
 				})
@@ -117,7 +107,7 @@ var _ = Describe("Server", func() {
 				m.ServeHTTP(res, req)
 
 				Expect(res.Code).To(Equal(http.StatusFound))
-				Expect(res.Header().Get("Location")).To(Equal(SERVICE_LIST_PAGE))
+				Expect(res.Header().Get(HEADER_LOCATION)).To(Equal(SERVICE_LIST_PAGE))
 			})
 		})
 
@@ -133,32 +123,32 @@ var _ = Describe("Server", func() {
 
 			It("should redirect to index page when success", func() {
 				res := httptest.NewRecorder()
-				req := CreatePostFormRequest(REGISTER_URL, createRegisterData("user@email.com", "password", "password"))
+				req := CreatePostFormRequest(USER_REGISTER_URL, createRegisterData("user@email.com", "password", "password"))
 
 				m.ServeHTTP(res, req)
 
 				Expect(res.Code).To(Equal(http.StatusFound))
-				Expect(res.Header().Get("Location")).To(Equal(SERVICE_LIST_PAGE))
+				Expect(res.Header().Get(HEADER_LOCATION)).To(Equal(SERVICE_LIST_PAGE))
 			})
 
 			It("should redirect back to register page when validate email fail", func() {
 				res := httptest.NewRecorder()
-				req := CreatePostFormRequest(REGISTER_URL, createRegisterData("user", "password", "password"))
+				req := CreatePostFormRequest(USER_REGISTER_URL, createRegisterData("user", "password", "password"))
 
 				m.ServeHTTP(res, req)
 
 				Expect(res.Code).To(Equal(http.StatusFound))
-				Expect(res.Header().Get("Location")).To(Equal("/users/register.html"))
+				Expect(res.Header().Get(HEADER_LOCATION)).To(Equal("/users/register.html"))
 			})
 
 			It("should redirect back to register page when user is already exists", func() {
 				res := httptest.NewRecorder()
-				req := CreatePostFormRequest(REGISTER_URL, createRegisterData("admin@email.com", "password", "password"))
+				req := CreatePostFormRequest(USER_REGISTER_URL, createRegisterData("admin@email.com", "password", "password"))
 
 				m.ServeHTTP(res, req)
 
 				Expect(res.Code).To(Equal(http.StatusFound))
-				Expect(res.Header().Get("Location")).To(Equal(USER_REGISTER_PAGE))
+				Expect(res.Header().Get(HEADER_LOCATION)).To(Equal(USER_REGISTER_PAGE))
 			})
 
 		})
@@ -169,11 +159,11 @@ var _ = Describe("Server", func() {
 			m = martini.Classic()
 
 			db, firstUser = GenerateFixtures()
-			main.Analytics(db, m)
+			Analytics(db, m, map[string]Factory{})
 			m.Use(func(s Session, d acerender.TemplateData) {
-				s.Set(main.SESSION_USER_KEY, "0")
+				s.Set(SESSION_USER_KEY, "0")
 				user := models.GetUserFromId(db, firstUser.Id)
-				d.Set(main.SESSION_USER_KEY, user)
+				d.Set(SESSION_USER_KEY, user)
 			})
 		})
 
@@ -181,7 +171,7 @@ var _ = Describe("Server", func() {
 
 			It("should add service to user object", func() {
 				res := httptest.NewRecorder()
-				req := CreatePostFormRequest(ADD_SERVICE_URL, &url.Values{
+				req := CreatePostFormRequest(SERVICE_ADD_URL, &url.Values{
 					"name": []string{"Service1"},
 					"type": []string{"other"},
 					"key":  []string{"key"},
