@@ -157,7 +157,7 @@ var _ = Describe("Server", func() {
 
 	Describe("Logged in path", func() {
 
-		var mockService Service
+		var mockService *MockService
 
 		BeforeEach(func() {
 			m = martini.Classic()
@@ -225,7 +225,7 @@ var _ = Describe("Server", func() {
 
 				m.ServeHTTP(res, req)
 
-				Expect(res.Code).To(Equal(http.StatusFound))
+				Expect(res.Code).To(Equal(http.StatusOK))
 
 				body, _ := ioutil.ReadAll(res.Body)
 				output := map[string]interface{}{
@@ -236,6 +236,14 @@ var _ = Describe("Server", func() {
 				}
 				outputBytes, _ := json.Marshal(output)
 				Expect(string(body)).To(Equal(string(outputBytes)))
+				Expect(mockService.Data).To(Equal(Input{
+					Event: "name",
+					Data: map[string]interface{}{
+						"key1": "value1",
+						"key2": "value2",
+					},
+					IP: "127.0.0.1",
+				}))
 			})
 
 		})
