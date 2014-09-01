@@ -8,6 +8,7 @@ import (
 type Mixpanel struct {
 	Network Network
 	Token   string
+	Name    string
 }
 
 func (m *Mixpanel) Parse(in Input) ([]byte, error) {
@@ -37,7 +38,11 @@ func (m *Mixpanel) SetNetwork(network Network) {
 }
 
 func (m *Mixpanel) GetName() string {
-	return "MixPanel"
+	return m.Name
+}
+
+func (m *Mixpanel) GetType() string {
+	return "mixpanel"
 }
 
 func (m *Mixpanel) Send(input Input) Output {

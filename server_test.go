@@ -17,6 +17,7 @@ import (
 	"github.com/llun/martini-acerender"
 
 	. "github.com/llun/analytics"
+	. "github.com/llun/analytics/services"
 	. "github.com/martini-contrib/sessions"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -32,7 +33,7 @@ func GenerateFixtures() (*gorm.DB, *models.User) {
 	user, _ := models.NewUser(&db, "admin@email.com", "password")
 	user.Save()
 
-	service := models.NewService(&db, "other", "other", map[string]interface{}{
+	service := models.NewService(&db, "other", "mock", map[string]interface{}{
 		"key": "sample",
 	})
 	db.Model(user).Association("Services").Append(service)
@@ -155,11 +156,19 @@ var _ = Describe("Server", func() {
 	})
 
 	Describe("Logged in path", func() {
+
+		var mockService Service
+
 		BeforeEach(func() {
 			m = martini.Classic()
+			mockService = &MockService{}
 
 			db, firstUser = GenerateFixtures()
-			Analytics(db, m, map[string]Factory{})
+			Analytics(db, m, map[string]Factory{
+				"mock": func(configuration map[string]interface{}) Service {
+					return mockService
+				},
+			})
 			m.Use(func(s Session, d acerender.TemplateData) {
 				s.Set(SESSION_USER_KEY, "0")
 				user := models.GetUserFromId(db, firstUser.Id)
@@ -222,8 +231,7 @@ var _ = Describe("Server", func() {
 				output := map[string]interface{}{
 					"success": true,
 					"services": map[string]interface{}{
-						"service1": true,
-						"service2": true,
+						"mock": true,
 					},
 				}
 				outputBytes, _ := json.Marshal(output)

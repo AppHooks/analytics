@@ -18,6 +18,7 @@ type Output struct {
 type Service interface {
 	Send(in Input) Output
 	GetName() string
+	GetType() string
 	GetConfiguration() map[string]interface{}
 	LoadConfiguration(configuration map[string]interface{})
 	SetNetwork(network Network)

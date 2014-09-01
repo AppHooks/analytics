@@ -19,7 +19,7 @@ var _ = Describe("Mixpanel", func() {
 
 		BeforeEach(func() {
 			mockNetwork = MockNetwork{}
-			service = Mixpanel{&mockNetwork, "token"}
+			service = Mixpanel{&mockNetwork, "token", "mixpanel"}
 		})
 
 		It("should return mixpanel as name", func() {
@@ -37,7 +37,7 @@ var _ = Describe("Mixpanel", func() {
 				MockData:   "1",
 				MockError:  nil,
 			}
-			service = Mixpanel{&mockNetwork, "token"}
+			service = Mixpanel{&mockNetwork, "token", "mixpanel"}
 
 			in := GetMockInput()
 			output := service.Send(in)
@@ -54,7 +54,7 @@ var _ = Describe("Mixpanel", func() {
 				MockData:   "0",
 				MockError:  nil,
 			}
-			service = Mixpanel{&mockNetwork, "token"}
+			service = Mixpanel{&mockNetwork, "token", "mixpanel"}
 
 			in := GetMockInput()
 			output := service.Send(in)
@@ -68,7 +68,7 @@ var _ = Describe("Mixpanel", func() {
 				MockData:   "",
 				MockError:  nil,
 			}
-			service = Mixpanel{&mockNetwork, "token"}
+			service = Mixpanel{&mockNetwork, "token", "mixpanel"}
 
 			in := GetMockInput()
 			output := service.Send(in)
@@ -82,7 +82,7 @@ var _ = Describe("Mixpanel", func() {
 
 		BeforeEach(func() {
 			mockNetwork = MockNetwork{}
-			service = Mixpanel{&mockNetwork, "token"}
+			service = Mixpanel{&mockNetwork, "token", "mixpanel"}
 		})
 
 		It("should return JSON string with mixpanel token and request ip", func() {
@@ -109,7 +109,7 @@ var _ = Describe("Mixpanel", func() {
 
 		It("should return configuration as json with token", func() {
 
-			service := Mixpanel{nil, "token"}
+			service := Mixpanel{nil, "token", "mixpanel"}
 			config := service.GetConfiguration()
 			Expect(config).To(Equal(map[string]interface{}{
 				"token": "token",
