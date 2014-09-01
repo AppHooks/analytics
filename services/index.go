@@ -20,6 +20,7 @@ type Service interface {
 	GetName() string
 	GetConfiguration() map[string]interface{}
 	LoadConfiguration(configuration map[string]interface{})
+	SetNetwork(network Network)
 }
 
 type Network interface {

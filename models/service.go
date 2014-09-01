@@ -44,6 +44,8 @@ func NewService(db *gorm.DB, name string, target string, configuration map[strin
 	return &service
 }
 
-func ListServicesForUser(db *gorm.DB, user *User) []*Service {
-	return []*Service{}
+func GetServicesForUser(db *gorm.DB, user *User) []Service {
+	var services []Service
+	db.Model(user).Related(&services)
+	return services
 }

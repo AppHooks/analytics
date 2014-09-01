@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/go-martini/martini"
 	"github.com/jinzhu/gorm"
@@ -33,17 +32,20 @@ const (
 	SERVICE_ADD_ROUTE = "/services/add"
 )
 
+type Factory func(configuration map[string]interface{}) Service
+
 func Analytics(db *gorm.DB, m *martini.ClassicMartini) {
 
 	network := NetworkWrapper{}
-	services := []Service{}
 
-	if len(os.Getenv("Mixpanel")) > 0 {
-		mixpanel := Mixpanel{network, os.Getenv("Mixpanel")}
-		services = append(services, &mixpanel)
+	services := map[string]Factory{
+		"mixpanel": func(configuration map[string]interface{}) Service {
+			mixpanel := &Mixpanel{}
+			mixpanel.SetNetwork(network)
+			mixpanel.LoadConfiguration(configuration)
+			return mixpanel
+		},
 	}
-
-	aggregator := Aggregator{services}
 
 	templateOptions := &ace.Options{BaseDir: "public/templates"}
 	if martini.Env == martini.Dev {
@@ -152,25 +154,27 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini) {
 
 		r.Post("/send/:key", func(params martini.Params, res http.ResponseWriter, req *http.Request) {
 			user := models.GetUserFromKey(db, params["key"])
-			log.Printf("User: %+v", user)
+			userServices := models.GetServicesForUser(db, user)
+
+			decoder := json.NewDecoder(req.Body)
+			var input map[string]interface{}
+			decoder.Decode(&input)
+
+			targets := []Service{}
+			for _, userService := range userServices {
+				data, exists := services[userService.Type]
+				if exists {
+					targets = append(targets, data(userService.GetConfiguration()))
+				}
+			}
+
+			aggregator := &Aggregator{targets}
+
+			fmt.Fprintf(res, aggregator.Send(input, req.RemoteAddr))
 		})
 
 	}, requiredLoggedIn)
 
-	m.Post("/analytics/send", func(res http.ResponseWriter, req *http.Request) {
-		header := res.Header()
-		header.Add("Content-Type", "application/json")
-		res.WriteHeader(http.StatusOK)
-
-		decoder := json.NewDecoder(req.Body)
-		var input map[string]interface{}
-		err := decoder.Decode(&input)
-		if err != nil {
-			panic(-1)
-		}
-
-		fmt.Fprintf(res, aggregator.Send(input, req.RemoteAddr))
-	})
 }
 
 func main() {
