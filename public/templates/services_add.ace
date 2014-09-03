@@ -1,3 +1,7 @@
+= content scripts
+  script src="/js/libs/angular/angular.min.js"
+  script src="/js/service_add.js"
+
 = content main
   .row
     .col-xs-12
@@ -11,10 +15,8 @@
                 .form-group
                   label for="service" Type
                   select.form-control id="service" name="service"
-                    option Mixpanel
-                    option Google Analytics
-                    option Flurry
-                    option Other
+                    option value="mixpanel" selected= Mixpanel
+                    option value="ga" Google Analytics
 
                 .form-group
                   label for="name" Name
@@ -28,3 +30,17 @@
                   a.btn.btn-primary.pull-right href="#" Add Service
                   a.btn.btn-default.pull-right href="/services/list.html" Cancel
 
+  {{if .Get "test"}}
+  .row
+    .col-xs-12#mocha
+      script src="/js/libs/mocha/mocha.js"
+      script src="/js/libs/chai/chai.js"
+      = javascript
+        mocha.ui('bdd');
+        mocha.reporter('html');
+        expect = chai.expect;
+      script src="/js/service_add_specs.js"
+      = javascript
+        if (window.mochaPhantomJS) { mochaPhantomJS.run(); }
+        else { mocha.run(); }
+  {{end}}

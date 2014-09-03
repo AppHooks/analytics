@@ -182,9 +182,9 @@ var _ = Describe("Server", func() {
 			It("should add service to user object", func() {
 				res := httptest.NewRecorder()
 				req := CreatePostFormRequest(SERVICE_ADD_URL, &url.Values{
-					"name": []string{"Service1"},
-					"type": []string{"other"},
-					"key":  []string{"key"},
+					"name":          []string{"Service1"},
+					"type":          []string{"other"},
+					"configuration": []string{`{"key": "value"}`},
 				})
 
 				m.ServeHTTP(res, req)
