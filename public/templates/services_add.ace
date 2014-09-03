@@ -41,6 +41,9 @@
         expect = chai.expect;
       script src="/js/service_add_specs.js"
       = javascript
-        if (window.mochaPhantomJS) { mochaPhantomJS.run(); }
-        else { mocha.run(); }
+        if (window.mochaPhantomJS) { 
+            mochaPhantomJS.run(); 
+        } else { 
+            mocha.run(); 
+        }
   {{end}}

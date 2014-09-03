@@ -1,26 +1,49 @@
 describe("Adding new service", function(){
-    describe("Mixpanel", function(){
-        it("should have key field", function(){
-            document.querySelector("select[name='service']").value = "mixpanel";
-            expect(document.querySelector("input[name='key']")).to.exist;
-            expect(document.querySelector("label[for='key']")).to.exist;
-        });
+  
+  before(function() {
+    casper.start('http://localhost:3000', function () {
+      this.fill('form', {
+        'email': 'admin@email.com',
+        'password': 'password'
+      }, true)
     });
-    describe("GA", function(){
-        it("should have tracking ID field", function(){
-            document.querySelector("select[name='service']").value = "ga";
-            expect(document.querySelector("input[name='tracking_id']")).to.exist;
-            expect(document.querySelector("label[for='tracking_id']")).to.exist;
-        });
-    });
-    describe("Parse", function(){
-        it("should have application id and api key", function(){
-            document.querySelector("select[name='service']").value = "parse";
-            expect(document.querySelector("input[name='application_id']")).to.exist;
-            expect(document.querySelector("input[name='api_key']")).to.exist;
-            expect(document.querySelector("label[for='application_id']")).to.exist;
-            expect(document.querySelector("label[for='api_key']")).to.exist;
-        });
-    });
+  })
 
+  describe("Add GA", function(){
+    it ("should have tracking_id field", function(){
+      casper.thenOpenAndEvaluate('http://localhost:3000/services/add.html', function() {
+        document.querySelector("select[name='service']").value = "ga";
+      })
+      .then(function() {
+        'input[name="tracking_id"]'.should.be.inDOM.and.be.visible;
+        'label[for="tracking_id"]'.should.be.inDOM.and.be.visible;
+      });
+    })
+  })
+
+  describe("Add mixpanel", function(){
+    it ("should have key field", function(){
+      casper.thenOpenAndEvaluate('http://localhost:3000/services/add.html', function() {
+        document.querySelector("select[name='service']").value = "mixpanel";
+      })
+      .then(function() {
+        'input[name="key"]'.should.be.inDOM.and.be.visible;
+        'label[for="key"]'.should.be.inDOM.and.be.visible;
+      });
+    })
+  })
+
+  describe("Add parse", function(){
+    it ("should have application_id and api_key field", function(){
+      casper.thenOpenAndEvaluate('http://localhost:3000/services/add.html', function() {
+        document.querySelector("select[name='service']").value = "parse";
+      })
+      .then(function() {
+        'input[name="application_id"]'.should.be.inDOM.and.be.visible;
+        'label[for="application_id"]'.should.be.inDOM.and.be.visible;
+        'input[name="api_key"]'.should.be.inDOM.and.be.visible;
+        'label[for="api_key"]'.should.be.inDOM.and.be.visible;
+      });
+    })
+  })
 });
