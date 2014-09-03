@@ -131,12 +131,7 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini, services map[string]Facto
 			})
 		})
 		r.Get("/:page.html", func(params martini.Params, r acerender.Render, req *http.Request) {
-			isTest := req.FormValue("test")
-			r.AceOk("layout:services_"+params["page"], &acerender.AceData{
-				map[string]interface{}{
-					"test": isTest,
-				},
-			})
+			r.AceOk("layout:services_"+params["page"], nil)
 		})
 
 		r.Post("/add", func(res http.ResponseWriter, req *http.Request, data acerender.TemplateData) {
