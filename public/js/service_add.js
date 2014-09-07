@@ -12,14 +12,17 @@ angular.module('analytics', [])
       { name: 'Parse', value: 'parse' },
     ];
     $scope.selected = $scope.services[0]
+    $scope.config = {}
+
+    $scope.changeService = function() {
+      $scope.config = {}
+    }
+
     $scope.add = function() {
       $http.post('/services/add', {
-        "type": "mixpanel",
-        "name": "mixpanel1",
-        "config": {
-          "key": "key",
-          "secret": "secret"
-        }
+        'type': $scope.selected.value,
+        'name': $scope.name,
+        'config': $scope.config
       })
     }
   }])
