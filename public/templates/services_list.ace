@@ -26,7 +26,7 @@
                           | {{$service.Name}}
                         td
                           .btn-group
-                            a.btn.btn-danger href="" Remove
+                            a.btn.btn-danger href="/services/remove/{{$service.Id}}" Remove
                       {{end}}
 
                 a.btn.btn-default.pull-right href="/services/add.html" Add Service

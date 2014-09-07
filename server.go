@@ -51,9 +51,16 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini, services map[string]Facto
 		MaxAge: 86400000,
 	})
 	m.Use(Sessions("analytics", store))
-	m.Use(func(c martini.Context, session Session, data acerender.TemplateData) {
+	m.Use(func(res http.ResponseWriter, c martini.Context, session Session, data acerender.TemplateData) {
 		if userid := session.Get(SESSION_USER_KEY); userid != nil {
 			user := models.GetUserFromId(db, userid.(int64))
+			if user == nil {
+				session.Delete(SESSION_USER_KEY)
+				res.Header().Set(HEADER_LOCATION, SERVICE_LIST_PAGE)
+				res.WriteHeader(http.StatusFound)
+				return
+			}
+
 			data.Set(SESSION_USER_KEY, user)
 		}
 
