@@ -155,6 +155,19 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini, services map[string]Facto
 			fmt.Fprintf(res, string(output))
 		})
 
+		r.Get("/remove/:service", func(res http.ResponseWriter, params martini.Params) {
+			service := models.GetServiceFromId(db, params["service"])
+			service.Delete()
+
+			header := res.Header()
+			header.Set(HEADER_LOCATION, SERVICE_LIST_PAGE)
+			header.Set(HEADER_CONTENT_TYPE, "application/json")
+			res.WriteHeader(http.StatusFound)
+
+			output, _ := json.Marshal(map[string]interface{}{"success": true})
+			fmt.Fprintf(res, string(output))
+		})
+
 		r.Post("/send/:key", func(params martini.Params, res http.ResponseWriter, req *http.Request) {
 			user := models.GetUserFromKey(db, params["key"])
 			userServices := models.GetServicesForUser(db, user)

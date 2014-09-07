@@ -22,6 +22,13 @@ func (m *BaseModel) Save() {
 	}
 }
 
+func (m *BaseModel) Delete() {
+	var db = m.db
+	if !db.NewRecord(m.model) {
+		db.Delete(m.model)
+	}
+}
+
 func NewBaseModel(db *gorm.DB, model Model) BaseModel {
 	return BaseModel{db, model}
 }

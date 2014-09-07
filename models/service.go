@@ -49,3 +49,17 @@ func GetServicesForUser(db *gorm.DB, user *User) []Service {
 	db.Model(user).Related(&services)
 	return services
 }
+
+func GetServiceFromId(db *gorm.DB, id string) *Service {
+	var (
+		service Service
+		total   int
+	)
+	db.Where("id = ?", id).First(&service).Count(&total)
+
+	if total == 0 {
+		return nil
+	}
+	service.BaseModel = NewBaseModel(db, &service)
+	return &service
+}
