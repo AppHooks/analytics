@@ -189,7 +189,7 @@ var _ = Describe("Server", func() {
 
 		Context("Services", func() {
 
-			FIt("should add service to user object", func() {
+			It("should add service to user object", func() {
 				res := httptest.NewRecorder()
 				req := CreateJSONFormRequest(SERVICE_ADD_URL, map[string]interface{}{
 					"name": "Service1",

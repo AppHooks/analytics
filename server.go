@@ -137,12 +137,12 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini, services map[string]Facto
 
 		r.Post("/add", func(res http.ResponseWriter, req *http.Request, data acerender.TemplateData) {
 			body, _ := ioutil.ReadAll(req.Body)
-			log.Printf("Body: %+v", string(body))
+			var input map[string]interface{}
+			json.Unmarshal(body, &input)
 
 			user := data.Get(SESSION_USER_KEY).(*models.User)
-			service := models.NewService(db, req.FormValue("name"), req.FormValue("type"), map[string]interface{}{
-				"key": req.FormValue("key"),
-			})
+			service := models.NewService(db, input["name"].(string), input["type"].(string),
+				input["config"].(map[string]interface{}))
 			db.Model(user).Association("Services").Append(service)
 
 			header := res.Header()
