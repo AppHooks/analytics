@@ -3,30 +3,39 @@
   script src="/js/service_add.js"
 
 = content main
-  .row
+  .row ng-app="analytics"
     .col-xs-12
-      .panel.panel-default
+      .panel.panel-default ng-controller="AddServiceCtrl"
         .panel-heading
           h3.panel-title Add Service
         .panel-body
           .row
             .col-xs-12.col-md-6.col-md-offset-3
-              form
+              form ng-submit="add()"
                 .form-group
                   label for="service" Type
-                  select.form-control id="service" name="service"
-                    option value="mixpanel" selected= Mixpanel
-                    option value="ga" Google Analytics
+                  select.form-control id="service" name="service" ng-options="service.name for service in services" ng-model="selected" 
 
                 .form-group
                   label for="name" Name
                   input.form-control id="name" type="text" name="name"
 
-                .form-group
-                  label for="key" Key
-                  input.form-control id="key" type="text" name="key"
+                .configuration ng-switch= on="selected.value"
+                  .form-group ng-switch-when="mixpanel"
+                    label for="key" Key
+                    input.form-control id="key" type="text" name="key"
+                    
+                  .form-group ng-switch-when="ga"
+                    label for="tracking_id" Tracking ID
+                    input.form-control id="tracking_id" type="text" name="tracking_id"
+
+                  .form-group ng-switch-when="parse"
+                    label for="application_id" Application ID 
+                    input.form-control id="application_id" type="text" name="application_id"
+                    label for="api_key" API Key
+                    input.form-control id="api_key" type="text" name="api_key"
 
                 .btn-toolbar
-                  a.btn.btn-primary.pull-right href="#" Add Service
+                  button.btn.btn-primary.pull-right Add Service
                   a.btn.btn-default.pull-right href="/services/list.html" Cancel
 

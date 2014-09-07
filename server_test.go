@@ -52,6 +52,16 @@ func CreatePostFormRequest(url string, data *url.Values) *http.Request {
 	return req
 }
 
+func CreateJSONFormRequest(url string, data map[string]interface{}) *http.Request {
+	b, _ := json.Marshal(data)
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(b))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Content-Length", strconv.Itoa(len(b)))
+	req.RemoteAddr = "127.0.0.1"
+
+	return req
+}
+
 var _ = Describe("Server", func() {
 
 	var (
@@ -179,12 +189,14 @@ var _ = Describe("Server", func() {
 
 		Context("Services", func() {
 
-			It("should add service to user object", func() {
+			FIt("should add service to user object", func() {
 				res := httptest.NewRecorder()
-				req := CreatePostFormRequest(SERVICE_ADD_URL, &url.Values{
-					"name":          []string{"Service1"},
-					"type":          []string{"other"},
-					"configuration": []string{`{"key": "value"}`},
+				req := CreateJSONFormRequest(SERVICE_ADD_URL, map[string]interface{}{
+					"name": "Service1",
+					"type": "other",
+					"config": map[string]interface{}{
+						"key": "value",
+					},
 				})
 
 				m.ServeHTTP(res, req)
@@ -204,6 +216,14 @@ var _ = Describe("Server", func() {
 				user := models.GetUserFromId(db, firstUser.Id)
 				db.Model(user).Related(&services)
 				Expect(len(services)).To(Equal(3))
+
+				Expect(services[2].Name).To(Equal("Service1"))
+				Expect(services[2].Type).To(Equal("other"))
+
+				configBytes, _ := json.Marshal(map[string]interface{}{
+					"key": "value",
+				})
+				Expect(services[2].Configuration).To(Equal(string(configBytes)))
 
 			})
 

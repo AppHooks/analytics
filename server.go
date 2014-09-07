@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -135,6 +136,9 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini, services map[string]Facto
 		})
 
 		r.Post("/add", func(res http.ResponseWriter, req *http.Request, data acerender.TemplateData) {
+			body, _ := ioutil.ReadAll(req.Body)
+			log.Printf("Body: %+v", string(body))
+
 			user := data.Get(SESSION_USER_KEY).(*models.User)
 			service := models.NewService(db, req.FormValue("name"), req.FormValue("type"), map[string]interface{}{
 				"key": req.FormValue("key"),
