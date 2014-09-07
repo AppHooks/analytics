@@ -30,9 +30,10 @@ const (
 	SERVICE_LIST_PAGE  = "/services/list.html"
 	SERVICE_ADD_PAGE   = "/services/add.html"
 
-	SERVICE_ADD_URL   = "/services/add"
-	USER_REGISTER_URL = "/users/register"
-	USER_LOGIN_URL    = "/users/login"
+	SERVICE_ADD_URL    = "/services/add"
+	SERVICE_REMOVE_URL = "/services/remove"
+	USER_REGISTER_URL  = "/users/register"
+	USER_LOGIN_URL     = "/users/login"
 )
 
 type Factory func(name string, configuration map[string]interface{}) Service

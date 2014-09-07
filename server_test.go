@@ -227,6 +227,21 @@ var _ = Describe("Server", func() {
 
 			})
 
+			It("should remove service", func() {
+				res := httptest.NewRecorder()
+				req, _ := http.NewRequest("GET", SERVICE_REMOVE_URL+"/1", nil)
+
+				m.ServeHTTP(res, req)
+
+				Expect(res.Code).To(Equal(http.StatusFound))
+				Expect(res.Header().Get("Location")).To(Equal(SERVICE_LIST_PAGE))
+
+				var services []models.Service
+				user := models.GetUserFromId(db, firstUser.Id)
+				db.Model(user).Related(&services)
+				Expect(len(services)).To(Equal(1))
+			})
+
 			It("should send data to user services", func() {
 				prepare := map[string]interface{}{
 					"event": "name",
