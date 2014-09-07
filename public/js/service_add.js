@@ -5,7 +5,7 @@ angular.module('analytics', [])
     $interpolate.startSymbol('<?');
     $interpolate.endSymbol('?>');
   }])
-  .controller('AddServiceCtrl', ['$scope', '$http', function($scope, $http){
+  .controller('AddServiceCtrl', ['$scope', '$http', '$window', function($scope, $http, $window){
     $scope.services = [
       { name: 'Mixpanel', value: 'mixpanel' }, 
       { name: 'Google Analytics', value: 'ga' },
@@ -23,6 +23,9 @@ angular.module('analytics', [])
         'type': $scope.selected.value,
         'name': $scope.name,
         'config': $scope.config
+      })
+      .success(function() {
+        $window.location = '/services/list.html'
       })
     }
   }])

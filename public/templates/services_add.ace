@@ -14,26 +14,26 @@
               form ng-submit="add()"
                 .form-group
                   label for="service" Type
-                  select.form-control id="service" name="service" ng-options="service.name for service in services" ng-model="selected" 
+                  select.form-control id="service" name="service" ng-options="service.name for service in services" ng-model="selected" ng-change="changeService()"
 
                 .form-group
                   label for="name" Name
-                  input.form-control id="name" type="text" name="name"
+                  input.form-control id="name" type="text" name="name" ng-model="name"
 
                 .configuration ng-switch= on="selected.value"
                   .form-group ng-switch-when="mixpanel"
                     label for="key" Key
-                    input.form-control id="key" type="text" name="key"
+                    input.form-control id="key" type="text" name="key" ng-model="config.key"
                     
                   .form-group ng-switch-when="ga"
                     label for="tracking_id" Tracking ID
-                    input.form-control id="tracking_id" type="text" name="tracking_id"
+                    input.form-control id="tracking_id" type="text" name="tracking_id" ng-model="config.tracking_id"
 
                   .form-group ng-switch-when="parse"
                     label for="application_id" Application ID 
-                    input.form-control id="application_id" type="text" name="application_id"
+                    input.form-control id="application_id" type="text" name="application_id" ng-model="application_id"
                     label for="api_key" API Key
-                    input.form-control id="api_key" type="text" name="api_key"
+                    input.form-control id="api_key" type="text" name="api_key" ng-model="api_key"
 
                 .btn-toolbar
                   button.btn.btn-primary.pull-right Add Service

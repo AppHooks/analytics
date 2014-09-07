@@ -51,7 +51,7 @@ describe('Add service controller', function() {
         'config': {
           'tracking_id': 'key'
         }
-      }).respond(200, '')
+      }).respond(302, '', { 'location': '/services/list.html' })
 
       scope.name = 'other'
       scope.selected = scope.services[1]
@@ -68,7 +68,7 @@ describe('Add service controller', function() {
         'config': {
           'key': 'mixpanelkey'
         }
-      }).respond(200, '')
+      }).respond(302, '', { 'location': '/services/list.html' })
 
       scope.name = 'mixpanel'
       scope.config = { 'key': 'mixpanelkey' }
