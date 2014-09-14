@@ -57,6 +57,33 @@ var _ = Describe("Models/User", func() {
 
 		})
 
+		Context("#UpdatePassword", func() {
+
+			var user *User
+
+			BeforeEach(func() {
+				user, _ = NewUser(nil, "email@address.com", "password")
+			})
+
+			It("should hash password and return true when success", func() {
+				result := user.UpdatePassword("newpassword", "newpassword")
+				Expect(result).To(BeTrue())
+				Expect(user.Password).ToNot(Equal("newpassword"))
+
+				Expect(user.Authenticate("password")).To(BeFalse())
+				Expect(user.Authenticate("newpassword")).To(BeTrue())
+			})
+
+			It("should not update password when password and confirm is not match", func() {
+				result := user.UpdatePassword("newpassword", "wrongpassword")
+				Expect(result).To(BeFalse())
+
+				Expect(user.Authenticate("password")).To(BeTrue())
+				Expect(user.Authenticate("newpassword")).To(BeFalse())
+			})
+
+		})
+
 	})
 
 })

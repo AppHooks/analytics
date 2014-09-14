@@ -32,6 +32,16 @@ func (u *User) Authenticate(password string) bool {
 	return u.Password == hex.EncodeToString(sum[:])
 }
 
+func (u *User) UpdatePassword(password string, confirm string) bool {
+	if password != confirm {
+		return false
+	}
+
+	sum := sha1.Sum([]byte(password))
+	u.Password = hex.EncodeToString(sum[:])
+	return true
+}
+
 func getUserFromField(db *gorm.DB, field string, value interface{}) *User {
 	var (
 		user  User
