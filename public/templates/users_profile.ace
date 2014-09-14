@@ -10,13 +10,13 @@
               form action="/users/update" method="post"
                 .form-group
                   label for="email" Email
-                  input.form-control id="email" type="email" value={{(.Get "user").Email}}
+                  input.form-control id="email" type="email" name="email" value={{(.Get "user").Email}}
 
                 hr
 
                 .form-group
                   label for="current" Current password
-                  input.form-control id="current" type="current" name="current" required= placeholder="Current password"
+                  input.form-control id="current" type="password" name="current" required= placeholder="Current password"
 
                 hr
 
@@ -29,5 +29,5 @@
                   input.form-control id="confirm" type="password" name="confirm" placeholder="Confirm Your Password"
 
                 .btn-toolbar
-                  a.btn.btn-primary.pull-right href="#" Update
+                  button.btn.btn-primary.pull-right type="submit" Update
 

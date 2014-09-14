@@ -321,6 +321,25 @@ var _ = Describe("Server", func() {
 				Expect(user.Email).To(Equal("user@newemail.com"))
 			})
 
+			It("should not update user profile when email is empty", func() {
+				res := httptest.NewRecorder()
+				req := CreatePostFormRequest(USER_UPDATE_URL, &url.Values{
+					"current":  []string{"password"},
+					"email":    []string{""},
+					"password": []string{"newpassword"},
+					"confirm":  []string{"newpassword"},
+				})
+
+				m.ServeHTTP(res, req)
+
+				Expect(res.Code).To(Equal(http.StatusFound))
+				Expect(res.Header().Get("Location")).To(Equal(USER_PROFILE_PAGE))
+
+				user := models.GetUserFromId(db, 1)
+				Expect(user.Email).To(Equal(firstUser.Email))
+				Expect(user.Password).To(Equal(firstUser.Password))
+			})
+
 			It("should not update user profile when current password is not match", func() {
 				res := httptest.NewRecorder()
 				req := CreatePostFormRequest(USER_UPDATE_URL, &url.Values{

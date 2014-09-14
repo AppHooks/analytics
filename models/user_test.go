@@ -82,6 +82,13 @@ var _ = Describe("Models/User", func() {
 				Expect(user.Authenticate("newpassword")).To(BeFalse())
 			})
 
+			It("should not update password when password and confirm is empty", func() {
+				result := user.UpdatePassword("", "")
+				Expect(result).To(BeTrue())
+
+				Expect(user.Authenticate("password")).To(BeTrue())
+			})
+
 		})
 
 	})

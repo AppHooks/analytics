@@ -35,6 +35,8 @@ func (u *User) Authenticate(password string) bool {
 func (u *User) UpdatePassword(password string, confirm string) bool {
 	if password != confirm {
 		return false
+	} else if password == "" && confirm == "" {
+		return true
 	}
 
 	sum := sha1.Sum([]byte(password))
