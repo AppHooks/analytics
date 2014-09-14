@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/go-martini/martini"
 	"github.com/jinzhu/gorm"
@@ -100,7 +101,7 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini, services map[string]Facto
 		})
 
 		r.Post("/update", requiredLoggedIn, func(res http.ResponseWriter, req *http.Request, data acerender.TemplateData) {
-			email := req.FormValue("email")
+			email := strings.TrimSpace(req.FormValue("email"))
 
 			current := req.FormValue("current")
 
@@ -108,7 +109,7 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini, services map[string]Facto
 			confirm := req.FormValue("confirm")
 
 			currentUser := data.Get(SESSION_USER_KEY).(*models.User)
-			if currentUser.Authenticate(current) && currentUser.UpdatePassword(password, confirm) {
+			if len(email) > 0 && currentUser.Authenticate(current) && currentUser.UpdatePassword(password, confirm) {
 				currentUser.Email = email
 				currentUser.Save()
 			}
