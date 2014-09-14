@@ -110,6 +110,7 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini, services map[string]Facto
 			currentUser := data.Get(SESSION_USER_KEY).(*models.User)
 			if currentUser.Authenticate(current) && currentUser.UpdatePassword(password, confirm) {
 				currentUser.Email = email
+				currentUser.Save()
 			}
 
 			res.Header().Set(HEADER_LOCATION, USER_PROFILE_PAGE)

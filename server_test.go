@@ -299,13 +299,13 @@ var _ = Describe("Server", func() {
 
 		})
 
-		FContext("Update user profile", func() {
+		Context("Update user profile", func() {
 
 			It("should update user profile when current password is match", func() {
 				res := httptest.NewRecorder()
 				req := CreatePostFormRequest(USER_UPDATE_URL, &url.Values{
 					"current":  []string{"password"},
-					"email":    []string{"user@newmail.com"},
+					"email":    []string{"user@newemail.com"},
 					"password": []string{"newpassword"},
 					"confirm":  []string{"newpassword"},
 				})
@@ -325,7 +325,7 @@ var _ = Describe("Server", func() {
 				res := httptest.NewRecorder()
 				req := CreatePostFormRequest(USER_UPDATE_URL, &url.Values{
 					"current":  []string{"wrongpassword"},
-					"email":    []string{"user@newmail.com"},
+					"email":    []string{"user@newemail.com"},
 					"password": []string{"newpassword"},
 					"confirm":  []string{"newpassword"},
 				})
@@ -344,7 +344,7 @@ var _ = Describe("Server", func() {
 				res := httptest.NewRecorder()
 				req := CreatePostFormRequest(USER_UPDATE_URL, &url.Values{
 					"current":  []string{"password"},
-					"email":    []string{"user@newmail.com"},
+					"email":    []string{"user@newemail.com"},
 					"password": []string{"newpassword"},
 					"confirm":  []string{"notmatchpassword"},
 				})
