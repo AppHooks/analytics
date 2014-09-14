@@ -12,6 +12,14 @@
                   label for="email" Email
                   input.form-control id="email" type="email" value={{(.Get "user").Email}}
 
+                hr
+
+                .form-group
+                  label for="current" Current password
+                  input.form-control id="current" type="current" name="current" required= placeholder="Current password"
+
+                hr
+
                 .form-group
                   label for="password" Password
                   input.form-control id="password" type="password" name="password" placeholder="Password"

@@ -34,6 +34,7 @@ const (
 	SERVICE_REMOVE_URL = "/services/remove"
 	USER_REGISTER_URL  = "/users/register"
 	USER_LOGIN_URL     = "/users/login"
+	USER_UPDATE_URL    = "/users/update"
 )
 
 type Factory func(name string, configuration map[string]interface{}) Service
@@ -96,6 +97,17 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini, services map[string]Facto
 		r.Get("/profile.html", requiredLoggedIn, func(r acerender.Render) {
 			r.AceOk("layout:users_profile", nil)
 		})
+
+		r.Post("/update", requiredLoggedIn, func(res http.ResponseWriter, req *http.Request) {
+			//email := req.FormValue("email")
+
+			//current := req.FormValue("current")
+
+			//password := req.FormValue("password")
+			//confirm := req.FormValue("confirm")
+
+		})
+
 		r.Get("/:page.html", alreadyLoggedIn, func(params martini.Params, r acerender.Render) {
 			r.AceOk("layout:users_"+params["page"], nil)
 		})
@@ -122,6 +134,7 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini, services map[string]Facto
 			res.WriteHeader(http.StatusFound)
 
 		})
+
 		r.Get("/logout", func(res http.ResponseWriter, session Session, data acerender.TemplateData) {
 			session.Clear()
 			data.Clear()

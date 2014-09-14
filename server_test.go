@@ -167,6 +167,7 @@ var _ = Describe("Server", func() {
 			})
 
 		})
+
 	})
 
 	Describe("Logged in path", func() {
@@ -297,6 +298,66 @@ var _ = Describe("Server", func() {
 			})
 
 		})
+
+		FContext("Update user profile", func() {
+
+			It("should update user profile when current password is match", func() {
+				res := httptest.NewRecorder()
+				req := CreatePostFormRequest(USER_UPDATE_URL, &url.Values{
+					"current":  []string{"password"},
+					"email":    []string{"user@newmail.com"},
+					"password": []string{"newpassword"},
+					"confirm":  []string{"newpassword"},
+				})
+
+				m.ServeHTTP(res, req)
+
+				Expect(res.Code).To(Equal(http.StatusOK))
+
+				user := models.GetUserFromId(db, 1)
+				Expect(user.Email).ToNot(Equal(firstUser.Email))
+				Expect(user.Password).ToNot(Equal(firstUser.Password))
+				Expect(user.Email).To(Equal("user@newemail.com"))
+			})
+
+			It("should not update user profile when current password is not match", func() {
+				res := httptest.NewRecorder()
+				req := CreatePostFormRequest(USER_UPDATE_URL, &url.Values{
+					"current":  []string{"wrongpassword"},
+					"email":    []string{"user@newmail.com"},
+					"password": []string{"newpassword"},
+					"confirm":  []string{"newpassword"},
+				})
+
+				m.ServeHTTP(res, req)
+
+				Expect(res.Code).To(Equal(http.StatusOK))
+
+				user := models.GetUserFromId(db, 1)
+				Expect(user.Email).To(Equal(firstUser.Email))
+				Expect(user.Password).To(Equal(firstUser.Password))
+			})
+
+			It("should not update password when password and confirm is not match", func() {
+				res := httptest.NewRecorder()
+				req := CreatePostFormRequest(USER_UPDATE_URL, &url.Values{
+					"current":  []string{"password"},
+					"email":    []string{"user@newmail.com"},
+					"password": []string{"newpassword"},
+					"confirm":  []string{"notmatchpassword"},
+				})
+
+				m.ServeHTTP(res, req)
+
+				Expect(res.Code).To(Equal(http.StatusOK))
+
+				user := models.GetUserFromId(db, 1)
+				Expect(user.Email).To(Equal(firstUser.Email))
+				Expect(user.Password).To(Equal(firstUser.Password))
+			})
+
+		})
+
 	})
 
 })
