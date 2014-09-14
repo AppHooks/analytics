@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
+	"os"
 	"strings"
 
 	"github.com/go-martini/martini"
@@ -230,7 +232,14 @@ func main() {
 	if martini.Env == martini.Dev {
 		db, err = gorm.Open("sqlite3", "/tmp/analytics.db")
 	} else {
-		// Use postgresql
+		dbUrl := os.Getenv("DATABASE_URL")
+		if len(dbUrl) == 0 {
+			log.Println("Production required `DATABASE_URL`")
+			panic(-1)
+		}
+
+		urlObj, _ := url.Parse(dbUrl)
+		db, err = gorm.Open(urlObj.Scheme, dbUrl)
 	}
 
 	if err != nil {
