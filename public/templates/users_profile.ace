@@ -7,7 +7,7 @@
         .panel-body
           .row
             .col-xs-12.col-md-6.col-md-offset-3
-              form
+              form action="/users/update" method="post"
                 .form-group
                   label for="email" Email
                   input.form-control id="email" type="email" value={{(.Get "user").Email}}
