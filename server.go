@@ -27,6 +27,7 @@ const (
 
 	USER_REGISTER_PAGE = "/users/register.html"
 	USER_LOGIN_PAGE    = "/users/login.html"
+	USER_PROFILE_PAGE  = "/users/profile.html"
 	SERVICE_LIST_PAGE  = "/services/list.html"
 	SERVICE_ADD_PAGE   = "/services/add.html"
 
@@ -98,14 +99,21 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini, services map[string]Facto
 			r.AceOk("layout:users_profile", nil)
 		})
 
-		r.Post("/update", requiredLoggedIn, func(res http.ResponseWriter, req *http.Request) {
-			//email := req.FormValue("email")
+		r.Post("/update", requiredLoggedIn, func(res http.ResponseWriter, req *http.Request, data acerender.TemplateData) {
+			email := req.FormValue("email")
 
-			//current := req.FormValue("current")
+			current := req.FormValue("current")
 
-			//password := req.FormValue("password")
-			//confirm := req.FormValue("confirm")
+			password := req.FormValue("password")
+			confirm := req.FormValue("confirm")
 
+			currentUser := data.Get(SESSION_USER_KEY).(*models.User)
+			if currentUser.Authenticate(current) && currentUser.UpdatePassword(password, confirm) {
+				currentUser.Email = email
+			}
+
+			res.Header().Set(HEADER_LOCATION, USER_PROFILE_PAGE)
+			res.WriteHeader(http.StatusFound)
 		})
 
 		r.Get("/:page.html", alreadyLoggedIn, func(params martini.Params, r acerender.Render) {

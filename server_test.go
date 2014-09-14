@@ -312,7 +312,8 @@ var _ = Describe("Server", func() {
 
 				m.ServeHTTP(res, req)
 
-				Expect(res.Code).To(Equal(http.StatusOK))
+				Expect(res.Code).To(Equal(http.StatusFound))
+				Expect(res.Header().Get("Location")).To(Equal(USER_PROFILE_PAGE))
 
 				user := models.GetUserFromId(db, 1)
 				Expect(user.Email).ToNot(Equal(firstUser.Email))
@@ -331,7 +332,8 @@ var _ = Describe("Server", func() {
 
 				m.ServeHTTP(res, req)
 
-				Expect(res.Code).To(Equal(http.StatusOK))
+				Expect(res.Code).To(Equal(http.StatusFound))
+				Expect(res.Header().Get("Location")).To(Equal(USER_PROFILE_PAGE))
 
 				user := models.GetUserFromId(db, 1)
 				Expect(user.Email).To(Equal(firstUser.Email))
@@ -349,7 +351,8 @@ var _ = Describe("Server", func() {
 
 				m.ServeHTTP(res, req)
 
-				Expect(res.Code).To(Equal(http.StatusOK))
+				Expect(res.Code).To(Equal(http.StatusFound))
+				Expect(res.Header().Get("Location")).To(Equal(USER_PROFILE_PAGE))
 
 				user := models.GetUserFromId(db, 1)
 				Expect(user.Email).To(Equal(firstUser.Email))
