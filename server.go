@@ -19,6 +19,7 @@ import (
 	. "github.com/llun/analytics/services"
 	. "github.com/martini-contrib/sessions"
 
+	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
 )
 
