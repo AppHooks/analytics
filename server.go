@@ -263,6 +263,14 @@ func main() {
 			mixpanel.LoadConfiguration(configuration)
 			return mixpanel
 		},
+		"ga": func(name string, configuration map[string]interface{}) Service {
+			ga := &GA{
+				Name:    name,
+				Network: network,
+			}
+			ga.LoadConfiguration(configuration)
+			return ga
+		},
 	})
 	m.Run()
 }

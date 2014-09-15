@@ -6,11 +6,13 @@ import (
 )
 
 type GA struct {
-	Network Network
+	Network    Network
+	TrackingID string
+	Name       string
 }
 
-func (i GA) GetName() string {
-	return "GA"
+func (i *GA) GetName() string {
+	return i.Name
 }
 
 func (i GA) Send(in Input) Output {
@@ -37,4 +39,18 @@ func (i GA) FormatGAInput(in Input) string {
 
 	var output string = buffer.String()
 	return output[0 : len(output)-1]
+}
+
+func (i *GA) SetNetwork(network Network) {
+	i.Network = network
+}
+
+func (i *GA) GetConfiguration() map[string]interface{} {
+	return map[string]interface{}{
+		"tracking-id": i.TrackingID,
+	}
+}
+
+func (i *GA) LoadConfiguration(configuration map[string]interface{}) {
+	i.TrackingID = configuration["tracking-id"].(string)
 }

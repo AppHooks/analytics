@@ -9,21 +9,26 @@ import (
 )
 
 var _ = Describe("Ga", func() {
+
 	var (
 		service     GA
 		mockNetwork MockNetwork
 	)
+
 	BeforeEach(func() {
 		mockNetwork = MockNetwork{}
-		service = GA{&mockNetwork}
+		service = GA{&mockNetwork, "tracking-id", "name"}
 	})
 
 	Context("#GetName", func() {
+
 		It("should return GA as name", func() {
 			name := service.GetName()
-			Expect(name).To(Equal("GA"))
+			Expect(name).To(Equal("name"))
 		})
+
 	})
+
 	Context("#Send", func() {
 		It("should do a request to ga api with post data", func() {
 			in := GetMockInput()
@@ -49,6 +54,34 @@ var _ = Describe("Ga", func() {
 			sort.Strings(outputStringArray)
 
 			Expect(outputStringArray).To(Equal(dataStringArray))
+		})
+
+	})
+
+	Context("#GetConfiguration", func() {
+
+		It("should return configuration as json with token", func() {
+
+			service := GA{nil, "tracking-id", "ga"}
+			config := service.GetConfiguration()
+			Expect(config).To(Equal(map[string]interface{}{
+				"tracking-id": "tracking-id",
+			}))
+
+		})
+
+	})
+
+	Context("#LoadConfiguration", func() {
+
+		It("should apply new configuration to service", func() {
+
+			service := GA{nil, "newid", "ga"}
+			service.LoadConfiguration(map[string]interface{}{
+				"tracking-id": "newid",
+			})
+			Expect(service.TrackingID).To(Equal("newid"))
+
 		})
 
 	})
