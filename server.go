@@ -97,6 +97,14 @@ func Analytics(db *gorm.DB, m *martini.ClassicMartini, services map[string]Facto
 		res.Header().Set(HEADER_LOCATION, USER_LOGIN_PAGE)
 		res.WriteHeader(http.StatusFound)
 	})
+
+	m.Group("/apps", func(r martini.Router) {
+
+		r.Get("/magento", func() {
+		})
+
+	})
+
 	m.Group("/users", func(r martini.Router) {
 
 		r.Get("/profile.html", requiredLoggedIn, func(r acerender.Render) {
